@@ -256,20 +256,27 @@ def approx_frequent_word_or_reverse(text, k, d):
             most_frequent.append(kmer)
     return most_frequent
 
+
+rna_codon = {'AAA' : 'K', 'AAC' : 'N', 'AAG' : 'K','AAU' : 'N','ACA' : 'T', 'ACC' : 'T', 'ACG' : 'T',
+    'ACU' : 'T', 'AGA' : 'R', 'AGC' : 'S', 'AGG' : 'R', 'AGU' : 'S', 'AUA' : 'I', 'AUC' : 'I',
+    'AUG' : 'M', 'AUU' : 'I', 'CAA' : 'Q' ,'CAC' : 'H', 'CAG' : 'Q', 'CAU' : 'H', 'CCA' : 'P',
+    'CCC' : 'P', 'CCG' : 'P', 'CCU' : 'P', 'CGA' : 'R', 'CGC' : 'R', 'CGG' : 'R', 'CGU' : 'R',
+    'CUA' : 'L', 'CUC' : 'L', 'CUG' : 'L', 'CUU' : 'L', 'GAA' : 'E', 'GAC' : 'D', 'GAG' : 'E',
+    'GAU' : 'D', 'GCA' : 'A', 'GCC' : 'A', 'GCG' : 'A', 'GCU' : 'A', 'GGA' : 'G', 'GGC' : 'G',
+    'GGG' : 'G', 'GGU' : 'G', 'GUA' : 'V', 'GUC' : 'V', 'GUG' : 'V', 'GUU' : 'V', 'UAA' : '-',
+    'UAC' : 'Y', 'UAG' : '-', 'UAU' : 'Y', 'UCA' : 'S', 'UCC' : 'S', 'UCG' : 'S', 'UCU' : 'S',
+    'UGA' : '-', 'UGC' : 'C', 'UGG' : 'W', 'UGU' : 'C', 'UUA' : 'L', 'UUC' : 'F', 'UUG' : 'L',
+    'UUU' : 'F'}
+
+amino_acid_mass = {'G' : 57, 'A' : 71, 'S' : 87, 'P' : 97, 'V' : 99, 'T' : 101, 'C' : 103,
+    'I' : 113, 'L' : 113, 'N' : 114, 'D' : 115, 'K' : 128, 'Q' : 128, 'E' : 129,'M' : 131,
+    'H' : 137, 'F' : 147, 'R' : 156, 'Y' : 163, 'W' : 186}
+
 def protein_translation(s):
     '''
     translate RNA text into peptide text
     '''
-    #assert len(s) % 3 == 0
-    with open("RNA_codon_table_1.txt") as f:
-        rna_codon = {}
-        def parse_line(l):
-            l = l.strip()
-            if (len(l)==5):
-                rna_codon[l[0:3]] = l[4]
-            else:
-                rna_codon[l[0:3]] = "-"
-        map(parse_line, f.readlines())
+    global rna_codon
     it = (s[i:3+i] for i in range(0, len(s), 3))
     t = ''.join(map(lambda e: rna_codon.setdefault(e,''), it))
     return t
@@ -295,7 +302,24 @@ def peptide_encoding(dna,peptide):
     search_seq(rna[2:])    
     search_seq(rrna[2:], reverse = True)
     return seq
-    
+   
+def linear_spectrum(peptide):
+    '''
+    Generate the theoretical spectrum of a cyclic peptide.
+    '''
+    global amino_acid_mass
+    peptide_mass = sum(amino_acid_mass[i] for i in peptide)
+    s = [0,peptide_mass]
+    for i in range(len(peptide)-1):
+        for j in range(i+1,len(peptide)):
+            subpeptide_mass = sum(amino_acid_mass[k] for k in peptide[i:j])
+            s.append(subpeptide_mass)
+            s.append(peptide_mass - subpeptide_mass)
+    return sorted(s)
+
+test = '0 71 71 99 101 103 113 113 114 128 128 131 147 163 170 172 184 199 215 227 227 231 244 259 260 266 271 286 298 298 310 312 328 330 330 372 385 391 394 399 399 399 401 413 423 426 443 443 470 493 498 502 513 519 526 527 541 554 556 557 564 569 590 598 616 626 640 654 657 658 665 670 682 697 697 703 711 729 729 753 753 771 779 785 785 800 812 817 824 825 828 842 856 866 884 892 913 918 925 926 928 941 955 956 963 969 980 984 989 1012 1039 1039 1056 1059 1069 1081 1083 1083 1083 1088 1091 1097 1110 1152 1152 1154 1170 1172 1184 1184 1196 1211 1216 1222 1223 1238 1251 1255 1255 1267 1283 1298 1310 1312 1319 1335 1351 1354 1354 1368 1369 1369 1379 1381 1383 1411 1411 1482'
+res = ' '.join(map(str,linear_spectrum('IAQMLFYCKVATN')))
+
 
 assert  'CATG' in frequent_word('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4)
 assert 'ACCGGGTTTT' ==  reverse_complement('AAAACCCGGT')
@@ -309,13 +333,6 @@ assert {'GATG', 'ATGC', 'ATGT'} == set(approx_frequent_word('ACGTTGCATGTCGCATGAT
 assert {'ATGT', 'ACAT'} == set(approx_frequent_word_or_reverse('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1))
 assert protein_translation('AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA').replace('-','') == 'MAMAPRTEINSTRING'
 assert set(peptide_encoding('ATGGCCATGGCCCCCAGAACTGAGATCAATAGTACCCGTATTAACGGGTGA','MA')) == {'ATGGCC', 'GGCCAT', 'ATGGCC'}
+assert ' '.join(map(str,linear_spectrum('LEQN'))) == '0 113 114 128 129 227 242 242 257 355 356 370 371 484'
 
-with open("B_brevis.txt") as f:
-    dna = f.read().replace('\n','')
-peptide = 'VKLFPWFNQY'
-
-res = peptide_encoding(dna, peptide)
-#print ' '.join(res)
-
-
-
+print ' '.join(map(str,linear_spectrum('GWHANHDMQGIP')))

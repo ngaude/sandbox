@@ -457,7 +457,10 @@ def maximal_non_branching_paths(adjacency_list):
         dadj[k] = dadj.get(k,[]) + v[:]
     degree = in_and_out_degree(adjacency_list)
     paths = []
-    
+    def is_one_in_one_out(vertex):
+        deg_in = degree[0].get(vertex,0)
+        deg_out = degree[1].get(vertex,0)
+        return (deg_in == 1) and (deg_out == 1)
     def visited(vertex):
         # linear time visited-vertex implementation
         # fixme : use dict to get constant time
@@ -465,31 +468,24 @@ def maximal_non_branching_paths(adjacency_list):
             if vertex in path:
                 return True
         return False
-    def isolated_cycle(v):
+    def isolated_cycle(vertex):
         '''
         return isolated cycle including vertex v if any
         '''
-        assert degree[0].get(v,0) == 1
-        cycle = [v]
-        while True:
-            e = dadj.get(cycle[-1],[])
-            if len(e)==1:
-                cycle.append(e[0])
-            else:
-                return None
+        cycle = [vertex]
+        while is_one_in_one_out(cycle[-1]):
+            cycle.append(dadj[cycle[-1]][0])
             if cycle[0]==cycle[-1]:
-                return cycle   
+                return cycle
+        return None
     def non_branching_path(edge):
         '''
         return the non-branching path starting with edge edge
         '''
         branch = edge[:]
-        while True:
-            nnodes = dadj.get(branch[-1],[])
-            if len(nnodes)==1:
-                branch.append(nnodes[0])
-            else:
-                return branch
+        while is_one_in_one_out(branch[-1]):     
+            branch.append(dadj[branch[-1]][0])
+        return branch
     for (v,e) in dadj.iteritems():
 #        # cut-off optimization, skip v node if already in path list
 #        if visited(v) : 
@@ -509,16 +505,18 @@ def maximal_non_branching_paths(adjacency_list):
                 paths.append(non_branching_path([v,w]))
     return paths
 
-#fname = 'C:/Users/ngaude/Downloads/MaximalNonBranchingPaths.txt'
-fname = 'C:/Users/ngaude/Downloads/dataset_6207_2.txt'
-ladj = [ ( int(l.split(' -> ')[0]), map(int,l.split(' -> ')[1].split(',')) ) for l in open(fname) ]
-mnbp = maximal_non_branching_paths(ladj)
-with open(fname+'.out', "w") as f:
-    for p in mnbp:
-        f.write(' -> '.join(map(str,p))+'\n')
+def contigs_from_reads(kmers):
+    '''
+    Generate the contigs from a collection of reads (with imperfect coverage).
+    Input: A collection of k-mers Patterns. 
+    Output: All contigs in DeBruijn(Patterns).
+    '''
+    g = debruijn_from_kmer(kmers)
+    m = maximal_non_branching_paths(g)
+    return sorted(map(genome_path,m))
 
 
-
+assert contigs_from_reads(['ATG','ATG','TGT','TGG','CAT','GGA','GAT','AGA']) == ['AGA', 'ATG', 'ATG', 'CAT', 'GAT', 'TGGA', 'TGT']
 assert maximal_non_branching_paths([(1,[2]),(2,[3]),(3,[4,5]),(6,[7]),(7,[6])]) == [[1, 2, 3], [3, 4], [3, 5], [6, 7, 6]]
 assert genomes_reconstruction_from_pair(4, 2, [('GAGA','TTGA'),('TCGT','GATG'),('CGTG','ATGT'),('TGGT','TGAG'),('GTGA','TGTT'),('GTGG','GTGA'),('TGAG','GTTG'),('GGTC','GAGA'),('GTCG','AGAT')]) == ['GTGGTCGTGAGATGTTGA']     
 assert pair_genome_path(4,2,[('GACC','GCGC'),('ACCG','CGCC'),('CCGA','GCCG'),('CGAG','CCGG'),('GAGC','CGGA')]) == 'GACCGAGCGCCGGA'
@@ -531,6 +529,22 @@ assert universal_string_brute_force(2) == ['00110', '01100', '10011', '11001']
 assert overlap(['ATGCG','GCATG','CATGC','AGGCA','GGCAT']) == [('AGGCA', 'GGCAT'), ('CATGC', 'ATGCG'), ('GCATG', 'CATGC'), ('GGCAT', 'GCATG')]
 assert genome_path(['ACCGA','CCGAA','CGAAG','GAAGC','AAGCT']) == 'ACCGAAGCT'
 assert composition(5, 'CAATCCAAC') == ['AATCC', 'ATCCA', 'CAATC', 'CCAAC', 'TCCAA']
+
+#fname = 'C:/Users/ngaude/Downloads/dataset_205_5.txt'
+#kmers = list(l[:-1] for l in open(fname))
+#contigs = contigs_from_reads(kmers)
+#with open(fname+'.out', "w") as f:
+#    for c in contigs:
+#        f.write(c+'\n')
+
+#fname = 'C:/Users/ngaude/Downloads/MaximalNonBranchingPaths.txt'
+#fname = 'C:/Users/ngaude/Downloads/dataset_6207_2.txt'
+#ladj = [ ( int(l.split(' -> ')[0]), map(int,l.split(' -> ')[1].split(',')) ) for l in open(fname) ]
+#mnbp = maximal_non_branching_paths(ladj)
+#with open(fname+'.out', "w") as f:
+#    for p in mnbp:
+#        f.write(' -> '.join(map(str,p))+'\n')
+#
 
 #fname = 'C:/Users/ngaude/Downloads/StringReconstructionFromReadPairs.txt'
 #fname = 'C:/Users/ngaude/Downloads/dataset_204_14.txt'

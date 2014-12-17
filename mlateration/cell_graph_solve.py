@@ -45,13 +45,3 @@ for i,e in E.iterrows():
 
 
 g.solve()
-
-
-#score the given solution
-for k,v in g.pos.iteritems():
-    (xa,ya) = k
-    (xb,yb) = v
-    err = math.sqrt(math.pow(xa-xb,2) + math.pow(ya-yb,2))
-    if (err>0.1):
-        print 'error',k,'!=',v
-

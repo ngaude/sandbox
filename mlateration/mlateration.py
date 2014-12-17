@@ -23,25 +23,26 @@ class mlaterationsolver:
         perfect solution is a 2d-point X [x,y] 
         where X is for all i<m at exactely Di distance from point Xi
         if no perfect solution can be found, approximation minimizing
-        m 'Di to Xi' constaints with gradient descent at 'lr' learning rate
+        m 'Di to Xi' constaints with gradient descent and learning rate r
         '''
         assert len(Di) > 2
         assert len(Xi) == len(Di)
-        self.lr = lr
         self.m = len(Di)
         self.Xi = np.array(Xi)
         self.Xi.shape = (self.m, 2)
-        self.Di = np.array(Di)
-        self.Di.shape = (self.m)
+        Di = np.array(Di)
+        Di.shape = (self.m)
+        self.Di2 = np.square(Di)
+        self.lr = lr
         return
     
     def __A(self, X):
         '''
         compute a m vector = [ ..., (x-xi)^2 + (y-yi)^2 - di^2, ....]
         '''
-        assert len(X) == 2
-        XX = np.atleast_2d(X).repeat(self.m, axis=0)
-        return np.square(XX-self.Xi).sum(axis = 1) - np.square(self.Di)
+        A = np.square(self.__XXi(X)).sum(axis = 1) - self.Di2
+#        A = np.divide(A,self.Di2)
+        return A
     
     def cost(self, X):
         '''
@@ -49,7 +50,7 @@ class mlaterationsolver:
         X vector = [x,y] is a solution of m-lateration is cost = 0
         cost = sum i<m  (xi-x)^2+(y-yi)^2 - di^2
         '''
-        return np.square(self.__A(X)).sum()
+        return math.pow(np.square(self.__A(X)).sum(),0.25)
     
     def XXi(self,X):
         return self.__XXi(X)
@@ -78,9 +79,13 @@ class mlaterationsolver:
         '''
         assert len(X) == 2
         grad = self.grad(X)
-        norm = math.pow(np.linalg.norm(grad), 2.0/3.0)
-        dX = - self.lr * self.grad(X) /norm
+        norm  = np.linalg.norm(grad)
+        if (norm < 1):
+            dX = - self.lr * grad
+        else:
+            dX = - self.lr * grad/norm
         X = np.array(X) + dX
+        #print X,'dX=',dX,self.cost(X)
         return (X,dX)
     
     def solve(self):
@@ -89,14 +94,13 @@ class mlaterationsolver:
         '''
         # initialize the X candidate a the centroid of Xi's
         X = self.Xi.sum(axis=0)/(1.0*len(self.Xi))
-        # choose precision as a fraction of minimal Di distance
-        precision = min(self.Di) * self.lr * 0.1
-        dX = 2 * precision
-        i = 0        
-        while (np.linalg.norm(dX) > precision) & (i<3333):
+        cost = self.cost(X)
+        # stop gradient descent when convergence is back tracking
+        i = 0
+        while (i < 3333):
             i += 1
             (X,dX) = self.iterate(X)
-        print X,' solved @iteration =',i
+        print X,' solved @iteration =',i, ' lr = ',self.lr
         return X
 
 
@@ -165,11 +169,6 @@ class mlaterationgraph:
         for (u, Xi, Di) in solvable:
             ml = mlaterationsolver(Xi,Di)
             X = ml.solve()
-#            if (u in self.pos):
-#                print 'u in vertex', u in self.vertex
-#                print 'u in self.pos', u in self.pos
-#                print 'u in unsolved', u in self.unsolved()
-#                print 'u in solvable', u in [ v[0] for v in self.solvable()]
             self.add_position(u, X)
             solved.append(u)
         return solved

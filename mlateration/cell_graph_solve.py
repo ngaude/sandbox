@@ -3,17 +3,18 @@
 author : nicolas gaude
 date : 2014-12-18
 """
-from mlateration import mlaterationsolver,mlaterationgraph
+from mlateration import mlaterationgraph
 
 
 import math
-import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
+
 def tsv(name):
-    datadir = '/home/ngaude/workspace/data/'
+    datadir = 'E:/data/'
     return datadir + name + '.tsv'
 
 
@@ -45,3 +46,8 @@ for i,e in E.iterrows():
 
 
 g.solve()
+
+with open(tsv('ngaude_cell_graph_computing_vertex'), 'a') as f:
+    f.write('numr_cell\tlon\tlat\n')
+    for k,v in g.pos.iteritems():
+        f.write(k + '\t' + str(v[0]) + '\t' + str(v[1]) + '\n')

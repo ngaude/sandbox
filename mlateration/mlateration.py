@@ -10,7 +10,6 @@ date : 2014-21-17
 """
 
 import math
-import random
 import numpy as np
 
 
@@ -94,7 +93,6 @@ class mlaterationsolver:
         '''
         # initialize the X candidate a the centroid of Xi's
         X = self.Xi.sum(axis=0)/(1.0*len(self.Xi))
-        cost = self.cost(X)
         # stop gradient descent when convergence is back tracking
         i = 0
         while (i < 3333):

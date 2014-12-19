@@ -44,8 +44,8 @@ for i,e in E.iterrows():
     if (i%1000 == 0):
         print 'load edges to graph : ',i,'/',len(E)
 
-
-g.solve()
+g.step = 100
+g.solve(complete=True)
 
 with open(tsv('ngaude_cell_graph_computing_vertex'), 'a') as f:
     f.write('numr_cell\tlon\tlat\n')

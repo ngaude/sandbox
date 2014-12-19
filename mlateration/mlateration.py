@@ -183,7 +183,7 @@ class mlaterationgraph:
     to solve others position,
     iterate to find position for missing vertex position using m-lateration
     '''
-    def __init__(self):
+    def __init__(self, dfunc = None):
         # dict of known vertex position
         self.pos = {}
         # set of vertex
@@ -195,6 +195,8 @@ class mlaterationgraph:
         self.step = 100
         self.stage = 0
         self.limit = 3
+        # dfunc : is a function parameter. used to compute a distance equivalent to parameter 't' at position 'pos'
+        self.dfunc = dfunc
         return
         
     def add_edge(self, u, v, d):
@@ -233,15 +235,23 @@ class mlaterationgraph:
         for u in unsolved:
             l = filter(lambda v: v[0] in self.pos, self.edge[u])
             if len(l) >= self.limit:
-                (V, Di) = zip(*l)
+                (V, Ti) = zip(*l)
                 Xi = [ self.pos[v] for v in V ]
-                solvable.append((u, Xi, Di))
+                solvable.append((u, Xi, Ti))
         return solvable
     
     def iterate(self):
         solved = []
         solvable = self.solvable()
-        for i,(u, Xi, Di) in enumerate(solvable):
+        for i,(u, Xi, Ti) in enumerate(solvable):
+
+            if (self.dfunc is None):
+                # if dfunc is None, then Di == Ti e.g constant speed of  along the graph 1
+                Di  = Ti
+            else:
+                # else, then use dfunc to convert Ti to Di given position of Xi's centroid
+                Di = [self.dfunc(x,t) for x,t in zip(Xi,Ti)]
+
             ml = mlaterationsolver(Xi,Di,step = self.step)
             X = ml.solve()
 #            print u,'=',X,' solved ',i,'/',len(solvable), ' lr = ',ml.lr,'cost = ',ml.cost(X)

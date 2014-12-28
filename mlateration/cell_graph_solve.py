@@ -14,7 +14,8 @@ from scipy import spatial
 
 
 def tsv(name):
-    datadir = '/home/ngaude/workspace/data/'
+#    datadir = '/home/ngaude/workspace/data/'
+    datadir = 'E:/data/'
     return datadir + name + '.tsv'
 
 

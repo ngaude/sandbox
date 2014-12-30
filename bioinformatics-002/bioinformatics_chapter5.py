@@ -53,10 +53,9 @@ def manhattan_tourist(n, m, down, right):
 #            print 's[',i+1,j+1,']=max',s[i,j+1],'+',down[i,j+1],',',s[i+1,j],'+',right[i+1,j]
     return s[n,m]
 
-def lcs(v,w):
+def longest_common_subsequence(v,w):
     '''
-    CODE CHALLENGE: Use OUTPUTLCS (reproduced below) to solve the 
-    Longest Common Subsequence Problem.
+    CODE CHALLENGE: solve the Longest Common Subsequence Problem.
     Input: Two strings v and w
     Output: A longest common subsequence of v and w. 
     (Note: more than one solution may exist, in which case you may output any one.)
@@ -64,37 +63,56 @@ def lcs(v,w):
     n = len(v)
     m = len(w)
     s = np.zeros(shape = (n+1,m+1), dtype = np.float)
-    # backtrack is coded as  right = 1 diag = 2 down = 3
-    backtrack = np.chararray(shape = (n+1,m+1))
+    backtrack = np.chararray(shape = (n,m))
     for i in range(n):
         for j in range(m):
-            s[i+1, j+1] = max(s[i, j+1], s[i+1, j], s[i, j] + (1 if v[i] == w[j] else 0))
+            s[i+1, j+1] = max(s[i, j+1], s[i+1, j], s[i, j] + (1 if v[i] == w[j] else 0))                
             if s[i+1, j+1] == s[i, j+1]:
-                    backtrack[i+1, j+1] = '|'
-            if s[i+1, j+1] == s[i+1, j]:
-                    backtrack[i+1, j+1] = '-'
-            if s[i+1, j+1] == s[i, j] + 1:
-                    backtrack[i+1, j+1] = '/' if v[i] == w[j] else '*'
-
-    
-    def output_lcs(i,j):
-        if (i == 0) or (j == 0):
-            return '#'
+                    backtrack[i, j] = '|'
+            elif s[i+1, j+1] == s[i+1, j]:
+                    backtrack[i, j] = '-'
+            elif s[i+1, j+1] == s[i, j] + (1 if v[i] == w[j] else 0):
+                    backtrack[i, j] = '/' if v[i] == w[j] else '*'
+    lcs = []
+    i = n-1
+    j = m - 1
+    while (i >= 0 and j >= 0):
+        assert backtrack[i,j] != '*'
         if backtrack[i, j] == '|':
-            return output_lcs(i-1, j) + '|'
+            i -= 1 
         elif backtrack[i, j] == '-':
-            return output_lcs(i, j-1) + '-'
+            j -= 1
         else:
-            return output_lcs(i-1, j-1) + w[j]
+            lcs.append(w[j])
+            j -= 1
+            i -= 1
+    lcs.reverse()
     
-    print 's',s.shape
-    print s
-    print 'bt',backtrack.shape
-    print backtrack
-    print '>>',output_lcs(n-1,m-1)
-    return s[n,m]           
+#    print 's',s.shape
+#    print s
+#    print 'bt',backtrack.shape
+#    print backtrack
 
-print lcs('AACCTTGG','ACACTGTGA')
+    return ''.join(lcs)
+   
+def dag_longest_path(source, sink, edges):
+    '''
+    Input: 
+    the source node of a graph, 
+    the sink node of the graph,
+    followed by a list of edges in the graph.    
+    Output: longest path from source to sink as a the list of nodes.
+    '''
+
+assert len(longest_common_subsequence('AACCTTGG','ACACTGTGA'))== 6
+
+print longest_common_subsequence('AACCTTGG','ACACTGTGA')
+
+v = 'ATAGTCTGCGTCCACCAAGAACTCGCGATACGGCTTGGGTGAGAGAAGAAATTGTTGGACTGTCGTGGGTATAACATCCGGGTCGAGGCGAAGGTCCGCTAGTTATCCCCTGGCGTGGCTAAATAGCAATTTTGCAGAATGCCTTATCTATCTTCAGCCATGCGCTTAACTAAATATTTTCAGTATAGTGTTACTAACGAGGAAGTCAAGTGCGTCTAATTTATTGAATAGAACTACTAGTTTTCCCCATAACGCCTAACTTTTAGAATACGATCTCTTTAGGATTAGAGATTTGCCAGGGCACACCGGGGTTGAGAGGGAAGGGGTTTGTACCTCGTGCGGCCTCAGGGGGGCGGTGTTGTCAGAATCTATCCGCACCCGCAGACCTATATTCCTACGTGGCAAGCCTGCATTTGTTAGCTGGTCCGCCTCGCGCAGGCGTCCGTCGGACCAGTGTCGAGAGCCCAATGCATTAGCAGTTCTTTGCCGTTATGGTTCTAAATGAGAAAGCACGTAGCCTTCGAATCAGTTTCCCGATTACTGGCTCCTCGACATAAAAAATCTGTCTCGAGTAGCATTCTGACGATAGGTTAGGGTGCCTGGAGTGAATTTAGCTGCATAATACCTTTGCGACCGTAGAAGACCCGGCCTGGATAGTGATCACCGCTGCTCCCCCATCTGGTTTCCTAGCTAATTGGGTCAGTGACTCTCCTCTCACTTGGGTTCTTCTTCTACGGAATCTGCGAAACACTGCAATATGGACCACAGAGCTTAAAGTATAGAGTCGCGCCAGTCACCACTCTGGTGATCAGTGAAGGGAATGATCACTCCAAACTGAACTCGCCGGTTTTAGTCTTGGCGGCCTTGTACGCTCACGGGTGAAGTAAGTACTAG'
+w = 'TTTCGCCGGGGCCTACGACAACTACACCACTTTTATTTCTCCTTATTGAATCTATGTTATCTGCGATAACGAGCAAGGGCACGGTCCGGTAGAATAAACTGGATGCATTAGGCACCATATTGAATTCAGGTGGGTACCGGTGTCCCCTCGTCCGGCGGACTAGCGGATGGCGGACATCAAGGGGGCGCACTGCCCAAGGGAAACACTCCGGGCATGCACCTCGATCACAGGTGTCTCACTCGTCACAGGTCTGCAAGTACCACGACAATTTCCTTCTCCTGGTGGATTCTTAGGGAGGAGTCCACTATACATACTCGTATCAGACTACTCAGGCCACCTCCTTAGGCGAAGGATATTCACCGGTGTGCGTTTGCAGACCCGACTGACCGTCTATGCCAGCCCTCAGTTATGCAAAATTTTACGATTTCACTGTCTACGTGGCCGGACTGGCCTGAACGGCAAAAAGGCAAGAGGATGAGCGCATATATGGGGTCCAGTTACATCACCAAATTCTAGGGCATTACTAAGCTATGACTGGCTACAGGTGTTGCGGTACCTCCCAGTAGATATTTGAGCGGAAACCGTATGACTGCAAGTTCGGATTAAGAGCCGCCGACGCTATCAGGCGCAGCGACAAATCGGAACGCGTCAGACGAACCAGGAAGAACGGCTGCTAGCCTTTACAACCTGATCAGCCCGTTGAGCGAAATGAATTACGGCTCGGGGGCAACTCTGACAGACCTCAGGTTTAAGCCTAAAACGTAGGACCCTTGAGCTTTCGCGCTATCTCCTAGAAGAAGGGAACCAGTGTCGCCTGTACGTTGCTGTAACCGTTTTTTGTACACCACAAGTCAGCCTCGCCCTCATTTTACTATGTCGGTGGCT'
+
+
+print longest_common_subsequence(v,w)
 
 assert manhattan_tourist(4,4,((1,0,2,4,3),(4,6,5,2,1),(4,4,5,2,1),(5,6,8,5,3)),((3,2,4,0),(3,2,4,2),(0,7,3,3),(3,3,0,2),(1,3,2,2))) == 34
 

@@ -52,15 +52,57 @@ def manhattan_tourist(n, m, down, right):
             s[i+1,j+1] = max(s[i,j+1]+down[i,j+1], s[i+1,j]+right[i+1,j])
 #            print 's[',i+1,j+1,']=max',s[i,j+1],'+',down[i,j+1],',',s[i+1,j],'+',right[i+1,j]
     return s[n,m]
-       
+
+def lcs(v,w):
+    '''
+    CODE CHALLENGE: Use OUTPUTLCS (reproduced below) to solve the 
+    Longest Common Subsequence Problem.
+    Input: Two strings v and w
+    Output: A longest common subsequence of v and w. 
+    (Note: more than one solution may exist, in which case you may output any one.)
+    '''
+    n = len(v)
+    m = len(w)
+    s = np.zeros(shape = (n+1,m+1), dtype = np.float)
+    # backtrack is coded as  right = 1 diag = 2 down = 3
+    backtrack = np.chararray(shape = (n+1,m+1))
+    for i in range(n):
+        for j in range(m):
+            s[i+1, j+1] = max(s[i, j+1], s[i+1, j], s[i, j] + (1 if v[i] == w[j] else 0))
+            if s[i+1, j+1] == s[i, j+1]:
+                    backtrack[i+1, j+1] = '|'
+            if s[i+1, j+1] == s[i+1, j]:
+                    backtrack[i+1, j+1] = '-'
+            if s[i+1, j+1] == s[i, j] + 1:
+                    backtrack[i+1, j+1] = '/' if v[i] == w[j] else '*'
+
+    
+    def output_lcs(i,j):
+        if (i == 0) or (j == 0):
+            return '#'
+        if backtrack[i, j] == '|':
+            return output_lcs(i-1, j) + '|'
+        elif backtrack[i, j] == '-':
+            return output_lcs(i, j-1) + '-'
+        else:
+            return output_lcs(i-1, j-1) + w[j]
+    
+    print 's',s.shape
+    print s
+    print 'bt',backtrack.shape
+    print backtrack
+    print '>>',output_lcs(n-1,m-1)
+    return s[n,m]           
+
+print lcs('AACCTTGG','ACACTGTGA')
 
 assert manhattan_tourist(4,4,((1,0,2,4,3),(4,6,5,2,1),(4,4,5,2,1),(5,6,8,5,3)),((3,2,4,0),(3,2,4,2),(0,7,3,3),(3,3,0,2),(1,3,2,2))) == 34
 
-fname = 'C:/Users/ngaude/Downloads/dataset_261_9.txt'
-lines = list(l.strip() for l in open(fname))
-n = int(lines[0].split(' ')[0])
-m = int(lines[0].split(' ')[1])
-down = map(lambda l : map(int, l.split(' ')), lines[1:1+n])
-assert lines[1+n] == '-'
-right = map(lambda l : map(int, l.split(' ')), lines[2+n:2+n+n+1])
-print manhattan_tourist(n, m, down, right)
+#fname = 'C:/Users/ngaude/Downloads/dataset_261_9.txt'
+#lines = list(l.strip() for l in open(fname))
+#n = int(lines[0].split(' ')[0])
+#m = int(lines[0].split(' ')[1])
+#down = map(lambda l : map(int, l.split(' ')), lines[1:1+n])
+#assert lines[1+n] == '-'
+#right = map(lambda l : map(int, l.split(' ')), lines[2+n:2+n+n+1])
+#print manhattan_tourist(n, m, down, right)

@@ -118,11 +118,11 @@ def longest_common_subsequence(v, w, indel = 0, scoring = None, verbose = False,
     i -= 1
     j -= 1
 
-#    print '------------'
-#    print s
-#    print backtrack
-#    print local,i,j
-#    print '------------'
+    print '------------'
+    print s
+    print backtrack
+    print local,i,j
+    print '------------'
     
     while (i >= 0 and j >= 0):
 #        assert backtrack[i,j] != '*'
@@ -682,12 +682,12 @@ def with_gap_alignement(v, w, scoring = blosum62):
     
 assert with_gap_alignement('PRTEINS', 'PRTWPSEIN')[0] == 8.0
 
-v = 'QCSYYMHQTSGSGPSRKDDIIMCRHKFIPCEIRTMTYKCWCMTTIYRLPMHSAALFFRFGHIWFMGGAYRTRAQLYTLNFSITK'
-w = 'QCSYYMNFFLQYTSGSGPKRKDDIINCRHQFIPCEIRTMTYKCWCMTTIYRLPMHSAAHMFRFFHIWFMGGAYRTRAQLDTLIFSDTK'
-(a,b,c) = with_gap_alignement(v, w)
-print int(a)
-print b
-print c
+#v = 'QCSYYMHQTSGSGPSRKDDIIMCRHKFIPCEIRTMTYKCWCMTTIYRLPMHSAALFFRFGHIWFMGGAYRTRAQLYTLNFSITK'
+#w = 'QCSYYMNFFLQYTSGSGPKRKDDIINCRHQFIPCEIRTMTYKCWCMTTIYRLPMHSAAHMFRFFHIWFMGGAYRTRAQLDTLIFSDTK'
+#(a,b,c) = with_gap_alignement(v, w)
+#print int(a)
+#print b
+#print c
 
 
 #v = 'YHFDVPDCWAHRYWVENPQAIAQMEQICFNWFPSMMMKQPHVFKVDHHMSCRWLPIRGKKCSSCCTRMRVRTVWE'
@@ -696,3 +696,151 @@ print c
 #print a
 #print b
 #print c
+
+
+
+
+def middle_edge(v, w, indel = 5, scoring = blosum62, c = None):
+    n = len(v)
+    m = len(w)
+            
+    def nodes_path_length(a, b):
+        n = len(a)
+        m = len(b)
+        '''
+        CODE CHALLENGE: solve the path length problem with linear space o(n)
+        Input: Two strings v and w
+        Output: the longest path length of v and w.
+        '''
+        s = np.zeros(shape = (n+1,2), dtype = np.float)
+        for i in range(n+1):
+            s[i, 0] = -indel * i
+        for j in range(m):
+            s[0, 1] = s[0,0] - indel
+            for i in range(n):
+                score = scoring[ a[i] ][ b[j] ]
+                s[i+1, 1] = max(s[i, 1] - indel, s[i+1, 0] - indel, s[i, 0] + score)
+            s[:, 0] = s[:, 1]
+        return s[:, 1]
+    # compute middle node column
+    if (c is None):
+        c = (m-1)/2
+        
+    # compute score of graph left-part
+    len1 = nodes_path_length(v,w[:c])
+    # compute score of graph right-part
+    len2 = nodes_path_length(v[::-1],w[:c:-1])  
+
+    
+    # compute horizontal max score for any i-row [0,n] at column c 
+    hs = [ (len1[i] + len2[i] - indel ) for i in range(n+1)]
+    # compute diagonal max score for any i-row [0,n-1] at column c 
+    ds = [ (len1[i] + len2[i+1] + scoring[ v[i] ][ w[c] ]) for i in range(n)]    
+    hmax = max(hs)
+    dmax = max(ds)
+    print 'c',c
+    print 'lens',len1,len2    
+    print 'horiz score',hs
+    print 'diag score',ds
+    print 'score_max(',v,w,')',max((hmax,dmax))
+    if (hmax > dmax):
+        # horizontal edge
+        i = hs.index(hmax)
+        j = c
+        k = i
+        l = c+1
+    else:
+        # diagonal edge
+        i = ds.index(dmax)
+        j = c
+        k = i+1
+        l = c+1
+    return ((i,j),(k,l))
+    
+#assert middle_edge('PLEASANTLY','MEASNLY') == ((4, 3), (5, 4))
+
+
+#v = 'TWLNSACYGVNFRRLNPMNKTKWDCWTWVPMVMAAQYLCRIFIPVMDHWEFFGDWGLETWRLGIHDHVKIPNFRWSCELHIREHGHHFKTRFLKHNQFTQCYGLMPDPQFHRSYDVACQWEVTMSQGLMRFHRQNQIEKQRDRTSTYCMMTIGPGFTSNGYDPFVTITITPVQEPVENWFTPGGSMGFMIISRYMQMFFYLTRFSDMTYLVGVHCENYVCWNNVAKFLNGNLQGIFDQGERAYHQFVTWHSYSQYSRCSVGRYACEQAMSRVNSKMTWHWPIRDQGHEHFSEQYLSEKRNPPCNPRIGNAGQHFYEIHRIAHRVAMCNWAPQGQHPGGPTPHDVETCLWLWSLCLKGSDRGYVDRPWMFLADQLGEANLTLITMFHGCTRGCLMWFMDWEECVCSYSVVNPRCHGSEQWSVQNLGWRTCDTLISLWEPECDKHNTPPCLHWEFEDHPSQLRPVMMCDKYVQSIPTDAKWAWTYSKDFVISHWLIWTPIKLEECVFPQINRLWGTACNQGSQKIVIQNVWLRPSSFFQERSKCSDSSCILNVGGSNVNITGKETRTHVPILHMHEIDLISTASSGMRHNLILPHGMLMLHMNWHHSTRAMNPYSSLKLIPWTFQVCETDDRDQNVATHVADPCHKGEDQEIRCCKGGVDHQWKGDRMWMMCMPDMNYVKQDQAPSGTCEGACENYPADKDKCYMIFTIVFDYRRCTKKVCIWISGFPVDAFNLISIANAGFFCCWLEPTELKWRRTFYLGKGTQGWMCTFPHRNIIPVIICAGFGRWVQGEVPFRPVAQISAHSSDRRQGHHPPGTNMCHDYGDQYPIKRVGMQVEEDDGASYCDCAADWKLADMYEADHLSIGVIDFTDWIYPKNGGIWSEIIKSHFHWYHWETPQNTVGAFNTIVGINGSDMCIYHGNTQWEFGWCWKWLNHGHMRNQGPCHLGILEGRISKFAQVTSWWWQTKHDKDWSIEPYGRHWGEAGRPYTYNYCWMRWAIVYNHGNVISVELVPFMDEYPGKCNKEDVQFELFSPMQA'
+#w = 'LWFKFLQCIFQYFKDQQETNCIWTFSPFSEHICQRVCQVYWNWNTPSSRTSDPRELFANSTIHNNRCGEWRYMFYHTRTLVQTAPLMKETLHSDGKHSMYCEQRHFFRSSYLIKVNYDVSHYLELYTFSEIPWKLTTHGWDGFSWFLLVNSCCTFDIDGKCGILSQCGMSRAFRTRQEDAYHFQTSLMHLHLHLHVQEGKHEKADLFAQFYNMLPMHGGTCGRNTEPSDLFDSATMNKYMAEHPASCKACPNVSKECFVYWWSHDFTKKHKLIEFSCGRDTGQTTQRTWNVDENEGGKWIWRFHYFMRAKALQIDPKFKPYWNEPRAIMRPGHVTAAPCICAQHSQNETAVCNRDQMHIHAIEFQQYHSRAFGEVQTWCDIGKENENDFIYEQHWWLVGGTEGMAGVIWKFVCARCRTQDCDFWKTCLTYSAQPMMKVYDTIFYVNSINPWEFEDHPSQCDKCVQSIPTDAKYAICGKFVISHWLYWTPQKFEECVHNNVRCAPMGNRLWGTACMVIQNVWLRPSMGSHFSCILNVGGSNINIQGKETWTHVPILHMHEIDLISTASSGMETCKPCFLSGPTIHMGFSYEIRAQPYSRDYFCMDWMQEADEVDHNRCETVQPTLPLLQQFEWKTSCMGQRWITIFCDHCQIVCFSTFFCVMPTFLPNTSILDKFYCIYLSISWTHYCNVHALGFIMRLHYSYMGWKEHKRMHAWDIGLDELWAQEGIQRAQLWCGDEFEVAKYPEWITEARTAIATRPWFHNCYIKPWWIREKHLWFGKESKLDHGHRGAMFTPVANDNTEWMHHWYMFCWAGSKNRLKRQIKEKLIFIIKFMITEFGLFLMIDYTQCYIAWMWAYTGIACYIDWEKCLKHDLTTTDLGCCVYRLFKWYEVRHRAPPQVNTRLPWSQIPMVAIQCNIVDECKEQWHFSYKASFVVEYLCPGCCTNGNRWQWYQVKETPFMYAFAASIFGFHHENLVVFITGSVTIPNGLFGCIAWTSPKPVQKTPASANTIIAYDKCILMG'
+#print middle_edge(v,w, indel = 5)
+
+#v = 'NMIKPGLMNRCCPIWFQGDQCTIFSWIAEEYSHAEFKQILNLMPWPFIVRSQVYTPIRPTYEDCNRFHHDIRAAVVSHKEIALFKYVTHCQWEHMGEAEWMMCQTTEKYEPGHFNIFQCLGDSHFNSHAVVDFQADEHAHKVLSSWIFHDYLMRHNVQASNHCNSSGWWSMRPNTFFRDAQVPPRLILCGYHVFEFCAICKTGVASPPLRSDEYTMAICCYAFTCRWMSSGDFYLGGKLMEHMDTMLYHFFIGGKEHEAYGWGWIKQHWWYESYNAMKSEPVYSHWCVSNHPQMHTWHYGRDMLRVHTPMKCMVEWLFENAQYGMKFWDSQVQKGITDHRTNLHALMQPCKWWCPYWGCSNEHEPHSCPVVTAAIVRECWTQAEADQKLWLTEVCLSSKWRRSKLSDYMMTMCSWWWKAVMIRYQQMVWTWIGTATQTHDYWLRQDHNMRWNHPVVAGNYMQKRAEPFCFPCPNGYVKSYLCDGSMANCFFMHPGVWATCYETDFIFRECEDYQHTDWYASPSTSCIHAMYMCMKCMRTGWVDSFQWRHTVGKYEDIDRNVWCQDFGVRMRDFWKRVFIDRRWTMMQLMCSRYPRVYQVHFSEKVHISLEMVPPSHSYWINGKFCSAHAMHWMVTKGMPSYPGTCKECCDDWELKHPCFQGAYNINKYGQYNAIRCFDSQQHFGQSQTPKQSDPMRKHSFNTKIFNNEDGSKFDDDTADTMWMYEEWGGTDECHRYFNLMILLTWLKTFSAHQHCKFTREFMWCWATCTPIESIYLYLWGILNAWLPTANRLQKAEQVFSDTKIMTSWCGELKQSCIMETMKMFAIELLFNMVVKLTGHSHCVHISRHLDCCSAFFCHIKSIFFDDLACAPIANAVNHVKKPEYTGIYDSPLGGHSGMAKVESFGQWPVKGLNPNAMDIKGGMSASYQAAVWIGKGNGWSTHYHTFGLEEPAFTIAGPFRPVGGLPEGWIKDHNMQFFCHHGYKATLAKGHWTSPWKWKKQQCDFSDQRAEFYPYDSGYKCSHIKFHVQIKGAQD'
+#w = 'PAWKNPGCYASPAQQHWEETVQSIKVMRIMEDRDKPCRHNWAPKSENYKLWSLCVGLAERGPWLMRHLFVTCPPFHTEHGIAFWGRSEFTWKMFFAWPYHKESMTAPFQLIVIMIMIAACETVCPYKDWIELHVHEGWGTKTICQLNTGHLTTSQYLVTAMCIGNSRDGYLLKMCGYLKAVARQVPQVLECAVHIYYSGWLWKVFLWLNTEDYVENRKVHCCFASFQFRSIPHDDICYVILPSYNIQDVHDARHREDCERCWSVSKEAQVFTSCETIEMFYFNMIYTWKVYVACNFHECNSFFVSMDSKHDQPTHQCRIEDAVTEVSEFTTNHWMKKEDKLNKQDAWDCKPFDVFNLMFFHRFRFMNFYHPQSVWDNPYKCENARTPGDPCLEGMMQLPPPQTFDRETQNHMNYGMLDAKYQNNACEQEGQIHITSMCGAQRVMPAIQPTWNHPVVLVWSGNYMQKRNPPFCQRPRIGGMCPEGYVKSYLCHGRMAHCFFMHPGVWPCCYETDFIFRECEDYQHTDWYASPSHDYPIMSCYMCMKCMNTGWVDSFQWTVCKYCDIDINSKQDFGVRRDFNKRVFIDRRWWMPTMGWDHHMDHVTSSLGRANNMPLILMRRGYGVPSYKVYPKLWNGPHKYYTPHAMYRHQSPGREWRHYVVNSHDLWNWPVVVETWDYFNHHPFWGQMFMPRALIMPSAMHLQGAEGMKYYWMMSSISDIGQKYTAYSCNKRDYYWLKSHDITGKIIIKPQRSLLLIRMHRCDWPDCWPDWQPFCWLSEDPFKYFHPPSKEGKTAPQSWAYLENELTWDSVGTIKIQWIPKAHLMDEWGPNFKLPYSNHYKNKSIDSNCSTCNKKEFHKIHIFRIPSVVFDHTLCQEYTATKVVPTWAKFNPDARDDADQCWCSGDPYYASYIEVDKGEHRDDKGMLWQTSSPSVIQKINFSYACELLYCLNFFWFGGGAKQVGDKTDIHKCDICYNYPGLNNWWYEQYTDRVANLRQIHKPWTQGQGREQSMERWVWYYSDKEGIRAHGTGHHMMSTRTV'
+#print middle_edge(v,w, indel = 5)
+
+v = 'PLEASANTLY'
+w = 'MEANLY'
+print longest_common_subsequence(v, w, indel = 5, scoring = blosum62, verbose = True)
+
+#for j in range(len(w)):
+#    print middle_edge(v,w,c=j)
+
+def linear_space_backtracking(v, w, ioffset = 0, joffset = 0, indel = 5, scoring = blosum62):
+    n = len(v)
+    m = len(w)
+    if n==0 and m==0:
+        # no string to compare, thus no edge
+        return []
+    elif n==0:
+        # return horizontal edges for a w gap
+#        return [((ioffset,joffset+j),(ioffset,joffset+j+1)) for j in range(m)]
+        return ['-']*m
+    elif m==0:
+        # return vertical edges for a v gap
+#        return [((ioffset+i,joffset),(ioffset+i+1,joffset)) for i in range(n)]
+        return ['|']*n
+        
+    ((i,j),(k,l)) = middle_edge(v,w,indel=indel,scoring=scoring)
+    
+#    print 'v',v,'w',w,'n',n,'m',m,'edge',edge,'raw',((i,j),(k,l))
+#    edge = ((i+ioffset,j+joffset),(k+ioffset,l+joffset))
+    if (i==k):
+        edge = '-'
+    else:
+        edge = '/'
+
+#    print 'middle edge (',edge,')',v,w
+    # back tracking the graph bottom-right part
+    nv = v[k:]
+    nw = w[l:]
+    right_track = linear_space_backtracking(nv, nw, ioffset = k+ioffset,joffset = l+joffset, indel = indel, scoring = blosum62)
+    # back tracking the graph upper-left part
+    nv = v[:i]
+    nw = w[:j]
+    left_track = linear_space_backtracking(nv, nw, ioffset = ioffset,joffset = joffset, indel = indel, scoring = blosum62)
+    print left_track,[edge],right_track
+    return left_track + [edge] + right_track
+    
+def backtrack_translation(v,w,bt, indel = 5, scoring = blosum62):
+    i = 0
+    j = 0
+    walign = []
+    valign = []
+    smax = 0
+    for e in bt:
+        if e == '|':
+            walign.append('-')
+            valign.append(v[i])
+            smax -= indel
+            i += 1            
+        elif e == '-':
+            walign.append(w[j])
+            valign.append('-')
+            smax -= indel
+            j += 1
+        else:
+            valign.append(v[i])
+            walign.append(w[j])
+            smax = scoring[ v[i] ][ w[j] ]
+            i += 1
+            j += 1 
+    return (smax,valign,walign)
+    
+v = 'PLEASANTLY'
+w = 'MEANLY'
+bt = linear_space_backtracking(v,w)
+(a,b,c) = backtrack_translation(v,w,bt)
+
+print '**************'
+middle_edge('PLEASANTLY','MEASNLY')
+print longest_common_subsequence(v, w, indel = 5, scoring = blosum62, verbose = True)

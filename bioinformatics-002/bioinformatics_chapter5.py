@@ -8,6 +8,13 @@ Created on Sun Dec 28 20:08:03 2014
 import numpy as np
 import copy
 
+edit_score={'A':{'A':0,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'C':{'A':-1,'C':0,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'D':{'A':-1,'C':-1,'D':0,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'E':{'A':-1,'C':-1,'D':-1,'E':0,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'F':{'A':-1,'C':-1,'D':-1,'E':-1,'F':0,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'G':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':0,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'H':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':0,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'I':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':0,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'K':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':0,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'L':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':0,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'M':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':0,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'N':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':0,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'P':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':0,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'Q':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':0,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'R':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':0,'S':-1,'T':-1,'V':-1,'W':-1,'Y':-1},'S':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':0,'T':-1,'V':-1,'W':-1,'Y':-1},'T':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':0,'V':-1,'W':-1,'Y':-1},'V':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':0,'W':-1,'Y':-1},'W':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':0,'Y':-1},'Y':{'A':-1,'C':-1,'D':-1,'E':-1,'F':-1,'G':-1,'H':-1,'I':-1,'K':-1,'L':-1,'M':-1,'N':-1,'P':-1,'Q':-1,'R':-1,'S':-1,'T':-1,'V':-1,'W':-1,'Y':0}}
+
+pam250 = {'A': {'A': 2, 'C': -2, 'E': 0, 'D': 0, 'G': 1, 'F': -3, 'I': -1, 'H': -1, 'K': -1, 'M': -1, 'L': -2, 'N': 0, 'Q': 0, 'P': 1, 'S': 1, 'R': -2, 'T': 1, 'W': -6, 'V': 0, 'Y': -3}, 'C': {'A': -2, 'C': 12, 'E': -5, 'D': -5, 'G': -3, 'F': -4, 'I': -2, 'H': -3, 'K': -5, 'M': -5, 'L': -6, 'N': -4, 'Q': -5, 'P': -3, 'S': 0, 'R': -4, 'T': -2, 'W': -8, 'V': -2, 'Y': 0}, 'E': {'A': 0, 'C': -5, 'E': 4, 'D': 3, 'G': 0, 'F': -5, 'I': -2, 'H': 1, 'K': 0, 'M': -2, 'L': -3, 'N': 1, 'Q': 2, 'P': -1, 'S': 0, 'R': -1, 'T': 0, 'W': -7, 'V': -2, 'Y': -4}, 'D': {'A': 0, 'C': -5, 'E': 3, 'D': 4, 'G': 1, 'F': -6, 'I': -2, 'H': 1, 'K': 0, 'M': -3, 'L': -4, 'N': 2, 'Q': 2, 'P': -1, 'S': 0, 'R': -1, 'T': 0, 'W': -7, 'V': -2, 'Y': -4}, 'G': {'A': 1, 'C': -3, 'E': 0, 'D': 1, 'G': 5, 'F': -5, 'I': -3, 'H': -2, 'K': -2, 'M': -3, 'L': -4, 'N': 0, 'Q': -1, 'P': 0, 'S': 1, 'R': -3, 'T': 0, 'W': -7, 'V': -1, 'Y': -5}, 'F': {'A': -3, 'C': -4, 'E': -5, 'D': -6, 'G': -5, 'F': 9, 'I': 1, 'H': -2, 'K': -5, 'M': 0, 'L': 2, 'N': -3, 'Q': -5, 'P': -5, 'S': -3, 'R': -4, 'T': -3, 'W': 0, 'V': -1, 'Y': 7}, 'I': {'A': -1, 'C': -2, 'E': -2, 'D': -2, 'G': -3, 'F': 1, 'I': 5, 'H': -2, 'K': -2, 'M': 2, 'L': 2, 'N': -2, 'Q': -2, 'P': -2, 'S': -1, 'R': -2, 'T': 0, 'W': -5, 'V': 4, 'Y': -1}, 'H': {'A': -1, 'C': -3, 'E': 1, 'D': 1, 'G': -2, 'F': -2, 'I': -2, 'H': 6, 'K': 0, 'M': -2, 'L': -2, 'N': 2, 'Q': 3, 'P': 0, 'S': -1, 'R': 2, 'T': -1, 'W': -3, 'V': -2, 'Y': 0}, 'K': {'A': -1, 'C': -5, 'E': 0, 'D': 0, 'G': -2, 'F': -5, 'I': -2, 'H': 0, 'K': 5, 'M': 0, 'L': -3, 'N': 1, 'Q': 1, 'P': -1, 'S': 0, 'R': 3, 'T': 0, 'W': -3, 'V': -2, 'Y': -4}, 'M': {'A': -1, 'C': -5, 'E': -2, 'D': -3, 'G': -3, 'F': 0, 'I': 2, 'H': -2, 'K': 0, 'M': 6, 'L': 4, 'N': -2, 'Q': -1, 'P': -2, 'S': -2, 'R': 0, 'T': -1, 'W': -4, 'V': 2, 'Y': -2}, 'L': {'A': -2, 'C': -6, 'E': -3, 'D': -4, 'G': -4, 'F': 2, 'I': 2, 'H': -2, 'K': -3, 'M': 4, 'L': 6, 'N': -3, 'Q': -2, 'P': -3, 'S': -3, 'R': -3, 'T': -2, 'W': -2, 'V': 2, 'Y': -1}, 'N': {'A': 0, 'C': -4, 'E': 1, 'D': 2, 'G': 0, 'F': -3, 'I': -2, 'H': 2, 'K': 1, 'M': -2, 'L': -3, 'N': 2, 'Q': 1, 'P': 0, 'S': 1, 'R': 0, 'T': 0, 'W': -4, 'V': -2, 'Y': -2}, 'Q': {'A': 0, 'C': -5, 'E': 2, 'D': 2, 'G': -1, 'F': -5, 'I': -2, 'H': 3, 'K': 1, 'M': -1, 'L': -2, 'N': 1, 'Q': 4, 'P': 0, 'S': -1, 'R': 1, 'T': -1, 'W': -5, 'V': -2, 'Y': -4}, 'P': {'A': 1, 'C': -3, 'E': -1, 'D': -1, 'G': 0, 'F': -5, 'I': -2, 'H': 0, 'K': -1, 'M': -2, 'L': -3, 'N': 0, 'Q': 0, 'P': 6, 'S': 1, 'R': 0, 'T': 0, 'W': -6, 'V': -1, 'Y': -5}, 'S': {'A': 1, 'C': 0, 'E': 0, 'D': 0, 'G': 1, 'F': -3, 'I': -1, 'H': -1, 'K': 0, 'M': -2, 'L': -3, 'N': 1, 'Q': -1, 'P': 1, 'S': 2, 'R': 0, 'T': 1, 'W': -2, 'V': -1, 'Y': -3}, 'R': {'A': -2, 'C': -4, 'E': -1, 'D': -1, 'G': -3, 'F': -4, 'I': -2, 'H': 2, 'K': 3, 'M': 0, 'L': -3, 'N': 0, 'Q': 1, 'P': 0, 'S': 0, 'R': 6, 'T': -1, 'W': 2, 'V': -2, 'Y': -4}, 'T': {'A': 1, 'C': -2, 'E': 0, 'D': 0, 'G': 0, 'F': -3, 'I': 0, 'H': -1, 'K': 0, 'M': -1, 'L': -2, 'N': 0, 'Q': -1, 'P': 0, 'S': 1, 'R': -1, 'T': 3, 'W': -5, 'V': 0, 'Y': -3}, 'W': {'A': -6, 'C': -8, 'E': -7, 'D': -7, 'G': -7, 'F': 0, 'I': -5, 'H': -3, 'K': -3, 'M': -4, 'L': -2, 'N': -4, 'Q': -5, 'P': -6, 'S': -2, 'R': 2, 'T': -5, 'W': 17, 'V': -6, 'Y': 0}, 'V': {'A': 0, 'C': -2, 'E': -2, 'D': -2, 'G': -1, 'F': -1, 'I': 4, 'H': -2, 'K': -2, 'M': 2, 'L': 2, 'N': -2, 'Q': -2, 'P': -1, 'S': -1, 'R': -2, 'T': 0, 'W': -6, 'V': 4, 'Y': -2}, 'Y': {'A': -3, 'C': 0, 'E': -4, 'D': -4, 'G': -5, 'F': 7, 'I': -1, 'H': 0, 'K': -4, 'M': -2, 'L': -1, 'N': -2, 'Q': -4, 'P': -5, 'S': -3, 'R': -4, 'T': -3, 'W': 0, 'V': -2, 'Y': 10}}
+
+blosum62 = {'A': {'A': 4, 'C': 0, 'E': -1, 'D': -2, 'G': 0, 'F': -2, 'I': -1, 'H': -2, 'K': -1, 'M': -1, 'L': -1, 'N': -2, 'Q': -1, 'P': -1, 'S': 1, 'R': -1, 'T': 0, 'W': -3, 'V': 0, 'Y': -2}, 'C': {'A': 0, 'C': 9, 'E': -4, 'D': -3, 'G': -3, 'F': -2, 'I': -1, 'H': -3, 'K': -3, 'M': -1, 'L': -1, 'N': -3, 'Q': -3, 'P': -3, 'S': -1, 'R': -3, 'T': -1, 'W': -2, 'V': -1, 'Y': -2}, 'E': {'A': -1, 'C': -4, 'E': 5, 'D': 2, 'G': -2, 'F': -3, 'I': -3, 'H': 0, 'K': 1, 'M': -2, 'L': -3, 'N': 0, 'Q': 2, 'P': -1, 'S': 0, 'R': 0, 'T': -1, 'W': -3, 'V': -2, 'Y': -2}, 'D': {'A': -2, 'C': -3, 'E': 2, 'D': 6, 'G': -1, 'F': -3, 'I': -3, 'H': -1, 'K': -1, 'M': -3, 'L': -4, 'N': 1, 'Q': 0, 'P': -1, 'S': 0, 'R': -2, 'T': -1, 'W': -4, 'V': -3, 'Y': -3}, 'G': {'A': 0, 'C': -3, 'E': -2, 'D': -1, 'G': 6, 'F': -3, 'I': -4, 'H': -2, 'K': -2, 'M': -3, 'L': -4, 'N': 0, 'Q': -2, 'P': -2, 'S': 0, 'R': -2, 'T': -2, 'W': -2, 'V': -3, 'Y': -3}, 'F': {'A': -2, 'C': -2, 'E': -3, 'D': -3, 'G': -3, 'F': 6, 'I': 0, 'H': -1, 'K': -3, 'M': 0, 'L': 0, 'N': -3, 'Q': -3, 'P': -4, 'S': -2, 'R': -3, 'T': -2, 'W': 1, 'V': -1, 'Y': 3}, 'I': {'A': -1, 'C': -1, 'E': -3, 'D': -3, 'G': -4, 'F': 0, 'I': 4, 'H': -3, 'K': -3, 'M': 1, 'L': 2, 'N': -3, 'Q': -3, 'P': -3, 'S': -2, 'R': -3, 'T': -1, 'W': -3, 'V': 3, 'Y': -1}, 'H': {'A': -2, 'C': -3, 'E': 0, 'D': -1, 'G': -2, 'F': -1, 'I': -3, 'H': 8, 'K': -1, 'M': -2, 'L': -3, 'N': 1, 'Q': 0, 'P': -2, 'S': -1, 'R': 0, 'T': -2, 'W': -2, 'V': -3, 'Y': 2}, 'K': {'A': -1, 'C': -3, 'E': 1, 'D': -1, 'G': -2, 'F': -3, 'I': -3, 'H': -1, 'K': 5, 'M': -1, 'L': -2, 'N': 0, 'Q': 1, 'P': -1, 'S': 0, 'R': 2, 'T': -1, 'W': -3, 'V': -2, 'Y': -2}, 'M': {'A': -1, 'C': -1, 'E': -2, 'D': -3, 'G': -3, 'F': 0, 'I': 1, 'H': -2, 'K': -1, 'M': 5, 'L': 2, 'N': -2, 'Q': 0, 'P': -2, 'S': -1, 'R': -1, 'T': -1, 'W': -1, 'V': 1, 'Y': -1}, 'L': {'A': -1, 'C': -1, 'E': -3, 'D': -4, 'G': -4, 'F': 0, 'I': 2, 'H': -3, 'K': -2, 'M': 2, 'L': 4, 'N': -3, 'Q': -2, 'P': -3, 'S': -2, 'R': -2, 'T': -1, 'W': -2, 'V': 1, 'Y': -1}, 'N': {'A': -2, 'C': -3, 'E': 0, 'D': 1, 'G': 0, 'F': -3, 'I': -3, 'H': 1, 'K': 0, 'M': -2, 'L': -3, 'N': 6, 'Q': 0, 'P': -2, 'S': 1, 'R': 0, 'T': 0, 'W': -4, 'V': -3, 'Y': -2}, 'Q': {'A': -1, 'C': -3, 'E': 2, 'D': 0, 'G': -2, 'F': -3, 'I': -3, 'H': 0, 'K': 1, 'M': 0, 'L': -2, 'N': 0, 'Q': 5, 'P': -1, 'S': 0, 'R': 1, 'T': -1, 'W': -2, 'V': -2, 'Y': -1}, 'P': {'A': -1, 'C': -3, 'E': -1, 'D': -1, 'G': -2, 'F': -4, 'I': -3, 'H': -2, 'K': -1, 'M': -2, 'L': -3, 'N': -2, 'Q': -1, 'P': 7, 'S': -1, 'R': -2, 'T': -1, 'W': -4, 'V': -2, 'Y': -3}, 'S': {'A': 1, 'C': -1, 'E': 0, 'D': 0, 'G': 0, 'F': -2, 'I': -2, 'H': -1, 'K': 0, 'M': -1, 'L': -2, 'N': 1, 'Q': 0, 'P': -1, 'S': 4, 'R': -1, 'T': 1, 'W': -3, 'V': -2, 'Y': -2}, 'R': {'A': -1, 'C': -3, 'E': 0, 'D': -2, 'G': -2, 'F': -3, 'I': -3, 'H': 0, 'K': 2, 'M': -1, 'L': -2, 'N': 0, 'Q': 1, 'P': -2, 'S': -1, 'R': 5, 'T': -1, 'W': -3, 'V': -3, 'Y': -2}, 'T': {'A': 0, 'C': -1, 'E': -1, 'D': -1, 'G': -2, 'F': -2, 'I': -1, 'H': -2, 'K': -1, 'M': -1, 'L': -1, 'N': 0, 'Q': -1, 'P': -1, 'S': 1, 'R': -1, 'T': 5, 'W': -2, 'V': 0, 'Y': -2}, 'W': {'A': -3, 'C': -2, 'E': -3, 'D': -4, 'G': -2, 'F': 1, 'I': -3, 'H': -2, 'K': -3, 'M': -1, 'L': -2, 'N': -4, 'Q': -2, 'P': -4, 'S': -3, 'R': -3, 'T': -2, 'W': 11, 'V': -3, 'Y': 2}, 'V': {'A': 0, 'C': -1, 'E': -2, 'D': -3, 'G': -3, 'F': -1, 'I': 3, 'H': -3, 'K': -2, 'M': 1, 'L': 1, 'N': -3, 'Q': -2, 'P': -2, 'S': -2, 'R': -3, 'T': 0, 'W': -3, 'V': 4, 'Y': -1}, 'Y': {'A': -2, 'C': -2, 'E': -2, 'D': -3, 'G': -3, 'F': 3, 'I': -1, 'H': 2, 'K': -2, 'M': -1, 'L': -1, 'N': -2, 'Q': -1, 'P': -3, 'S': -2, 'R': -2, 'T': -2, 'W': 2, 'V': -1, 'Y': 7}}
+
+
 def dynamic_programming_change(money, coins):
     '''
     CODE CHALLENGE: Solve the Change Problem.
@@ -118,11 +125,11 @@ def longest_common_subsequence(v, w, indel = 0, scoring = None, verbose = False,
     i -= 1
     j -= 1
 
-    print '------------'
-    print s
-    print backtrack
-    print local,i,j
-    print '------------'
+#    print '------------'
+#    print s
+#    print backtrack
+#    print local,i,j
+#    print '------------'
     
     while (i >= 0 and j >= 0):
 #        assert backtrack[i,j] != '*'
@@ -318,7 +325,6 @@ assert dag_longest_path(0,4,((0,1,7),(0,2,4),(2,3,2),(1,4,1),(3,4,3))) == (9, [0
 #print '->'.join(map(str,p))
 
 
-blosum62 = {'A': {'A': 4, 'C': 0, 'E': -1, 'D': -2, 'G': 0, 'F': -2, 'I': -1, 'H': -2, 'K': -1, 'M': -1, 'L': -1, 'N': -2, 'Q': -1, 'P': -1, 'S': 1, 'R': -1, 'T': 0, 'W': -3, 'V': 0, 'Y': -2}, 'C': {'A': 0, 'C': 9, 'E': -4, 'D': -3, 'G': -3, 'F': -2, 'I': -1, 'H': -3, 'K': -3, 'M': -1, 'L': -1, 'N': -3, 'Q': -3, 'P': -3, 'S': -1, 'R': -3, 'T': -1, 'W': -2, 'V': -1, 'Y': -2}, 'E': {'A': -1, 'C': -4, 'E': 5, 'D': 2, 'G': -2, 'F': -3, 'I': -3, 'H': 0, 'K': 1, 'M': -2, 'L': -3, 'N': 0, 'Q': 2, 'P': -1, 'S': 0, 'R': 0, 'T': -1, 'W': -3, 'V': -2, 'Y': -2}, 'D': {'A': -2, 'C': -3, 'E': 2, 'D': 6, 'G': -1, 'F': -3, 'I': -3, 'H': -1, 'K': -1, 'M': -3, 'L': -4, 'N': 1, 'Q': 0, 'P': -1, 'S': 0, 'R': -2, 'T': -1, 'W': -4, 'V': -3, 'Y': -3}, 'G': {'A': 0, 'C': -3, 'E': -2, 'D': -1, 'G': 6, 'F': -3, 'I': -4, 'H': -2, 'K': -2, 'M': -3, 'L': -4, 'N': 0, 'Q': -2, 'P': -2, 'S': 0, 'R': -2, 'T': -2, 'W': -2, 'V': -3, 'Y': -3}, 'F': {'A': -2, 'C': -2, 'E': -3, 'D': -3, 'G': -3, 'F': 6, 'I': 0, 'H': -1, 'K': -3, 'M': 0, 'L': 0, 'N': -3, 'Q': -3, 'P': -4, 'S': -2, 'R': -3, 'T': -2, 'W': 1, 'V': -1, 'Y': 3}, 'I': {'A': -1, 'C': -1, 'E': -3, 'D': -3, 'G': -4, 'F': 0, 'I': 4, 'H': -3, 'K': -3, 'M': 1, 'L': 2, 'N': -3, 'Q': -3, 'P': -3, 'S': -2, 'R': -3, 'T': -1, 'W': -3, 'V': 3, 'Y': -1}, 'H': {'A': -2, 'C': -3, 'E': 0, 'D': -1, 'G': -2, 'F': -1, 'I': -3, 'H': 8, 'K': -1, 'M': -2, 'L': -3, 'N': 1, 'Q': 0, 'P': -2, 'S': -1, 'R': 0, 'T': -2, 'W': -2, 'V': -3, 'Y': 2}, 'K': {'A': -1, 'C': -3, 'E': 1, 'D': -1, 'G': -2, 'F': -3, 'I': -3, 'H': -1, 'K': 5, 'M': -1, 'L': -2, 'N': 0, 'Q': 1, 'P': -1, 'S': 0, 'R': 2, 'T': -1, 'W': -3, 'V': -2, 'Y': -2}, 'M': {'A': -1, 'C': -1, 'E': -2, 'D': -3, 'G': -3, 'F': 0, 'I': 1, 'H': -2, 'K': -1, 'M': 5, 'L': 2, 'N': -2, 'Q': 0, 'P': -2, 'S': -1, 'R': -1, 'T': -1, 'W': -1, 'V': 1, 'Y': -1}, 'L': {'A': -1, 'C': -1, 'E': -3, 'D': -4, 'G': -4, 'F': 0, 'I': 2, 'H': -3, 'K': -2, 'M': 2, 'L': 4, 'N': -3, 'Q': -2, 'P': -3, 'S': -2, 'R': -2, 'T': -1, 'W': -2, 'V': 1, 'Y': -1}, 'N': {'A': -2, 'C': -3, 'E': 0, 'D': 1, 'G': 0, 'F': -3, 'I': -3, 'H': 1, 'K': 0, 'M': -2, 'L': -3, 'N': 6, 'Q': 0, 'P': -2, 'S': 1, 'R': 0, 'T': 0, 'W': -4, 'V': -3, 'Y': -2}, 'Q': {'A': -1, 'C': -3, 'E': 2, 'D': 0, 'G': -2, 'F': -3, 'I': -3, 'H': 0, 'K': 1, 'M': 0, 'L': -2, 'N': 0, 'Q': 5, 'P': -1, 'S': 0, 'R': 1, 'T': -1, 'W': -2, 'V': -2, 'Y': -1}, 'P': {'A': -1, 'C': -3, 'E': -1, 'D': -1, 'G': -2, 'F': -4, 'I': -3, 'H': -2, 'K': -1, 'M': -2, 'L': -3, 'N': -2, 'Q': -1, 'P': 7, 'S': -1, 'R': -2, 'T': -1, 'W': -4, 'V': -2, 'Y': -3}, 'S': {'A': 1, 'C': -1, 'E': 0, 'D': 0, 'G': 0, 'F': -2, 'I': -2, 'H': -1, 'K': 0, 'M': -1, 'L': -2, 'N': 1, 'Q': 0, 'P': -1, 'S': 4, 'R': -1, 'T': 1, 'W': -3, 'V': -2, 'Y': -2}, 'R': {'A': -1, 'C': -3, 'E': 0, 'D': -2, 'G': -2, 'F': -3, 'I': -3, 'H': 0, 'K': 2, 'M': -1, 'L': -2, 'N': 0, 'Q': 1, 'P': -2, 'S': -1, 'R': 5, 'T': -1, 'W': -3, 'V': -3, 'Y': -2}, 'T': {'A': 0, 'C': -1, 'E': -1, 'D': -1, 'G': -2, 'F': -2, 'I': -1, 'H': -2, 'K': -1, 'M': -1, 'L': -1, 'N': 0, 'Q': -1, 'P': -1, 'S': 1, 'R': -1, 'T': 5, 'W': -2, 'V': 0, 'Y': -2}, 'W': {'A': -3, 'C': -2, 'E': -3, 'D': -4, 'G': -2, 'F': 1, 'I': -3, 'H': -2, 'K': -3, 'M': -1, 'L': -2, 'N': -4, 'Q': -2, 'P': -4, 'S': -3, 'R': -3, 'T': -2, 'W': 11, 'V': -3, 'Y': 2}, 'V': {'A': 0, 'C': -1, 'E': -2, 'D': -3, 'G': -3, 'F': -1, 'I': 3, 'H': -3, 'K': -2, 'M': 1, 'L': 1, 'N': -3, 'Q': -2, 'P': -2, 'S': -2, 'R': -3, 'T': 0, 'W': -3, 'V': 4, 'Y': -1}, 'Y': {'A': -2, 'C': -2, 'E': -2, 'D': -3, 'G': -3, 'F': 3, 'I': -1, 'H': 2, 'K': -2, 'M': -1, 'L': -1, 'N': -2, 'Q': -1, 'P': -3, 'S': -2, 'R': -2, 'T': -2, 'W': 2, 'V': -1, 'Y': 7}}
 
 assert longest_common_subsequence('PLEASANTLY','MEANLY', indel = 5, scoring = blosum62, verbose = True)[0] == 8
 
@@ -636,15 +642,6 @@ def with_gap_alignement(v, w, scoring = blosum62):
     i -= 1
     j -= 1
     level = 1
-
-#    print '------------'
-#    print lower
-#    print middle
-#    print upper
-#    print backtrack[:,:,0]
-#    print backtrack[:,:,1]
-#    print backtrack[:,:,2]
-#    print '------------'
     
     while (i >= 0 and j >= 0):
         if (level == 1):
@@ -698,51 +695,64 @@ assert with_gap_alignement('PRTEINS', 'PRTWPSEIN')[0] == 8.0
 #print c
 
 
+###############################################################################
+# linear space alignement
+###############################################################################
 
+def last_column_score(a, b, indel = 5, scoring = blosum62):
+    '''
+    CODE CHALLENGE: 
+    compute the last column score of a,b global alignement
+    '''
+    n = len(a)
+    m = len(b)
+    
+    s = np.zeros(shape = (n+1,2), dtype = np.float)
+        
+    for i in range(n+1):
+        s[i, 0] = -indel * i        
+
+    if (m==0):
+        # handling special one-column-only case
+        return s[:, 0]
+    
+    for j in range(m):
+        s[0, 1] = s[0,0] - indel
+        for i in range(n):
+            score = scoring[ a[i] ][ b[j] ]
+            s[i+1, 1] = max(s[i, 1] - indel, s[i+1, 0] - indel, s[i, 0] + score)
+        s[:, 0] = s[:, 1]
+    return s[:, 1]
 
 def middle_edge(v, w, indel = 5, scoring = blosum62, c = None):
     n = len(v)
     m = len(w)
-            
-    def nodes_path_length(a, b):
-        n = len(a)
-        m = len(b)
-        '''
-        CODE CHALLENGE: solve the path length problem with linear space o(n)
-        Input: Two strings v and w
-        Output: the longest path length of v and w.
-        '''
-        s = np.zeros(shape = (n+1,2), dtype = np.float)
-        for i in range(n+1):
-            s[i, 0] = -indel * i
-        for j in range(m):
-            s[0, 1] = s[0,0] - indel
-            for i in range(n):
-                score = scoring[ a[i] ][ b[j] ]
-                s[i+1, 1] = max(s[i, 1] - indel, s[i+1, 0] - indel, s[i, 0] + score)
-            s[:, 0] = s[:, 1]
-        return s[:, 1]
+        
     # compute middle node column
     if (c is None):
         c = (m-1)/2
         
+    wleft = w[:c]
+    wmid = w[c]
+    wright = w[c+1:]
+        
     # compute score of graph left-part
-    len1 = nodes_path_length(v,w[:c])
+    len1 = last_column_score(v,wleft, indel = indel, scoring = scoring)
     # compute score of graph right-part
-    len2 = nodes_path_length(v[::-1],w[:c:-1])  
+    len2 = last_column_score(v[::-1],wright[::-1], indel = indel, scoring = scoring)[::-1]
 
-    
+#    print '-------'
+#    print 'v',v,'w',w
+#    print ',',wleft,',',wmid,',',wright,','
+#    print 'len1',len1
+#    print 'len2',len2
+
     # compute horizontal max score for any i-row [0,n] at column c 
     hs = [ (len1[i] + len2[i] - indel ) for i in range(n+1)]
     # compute diagonal max score for any i-row [0,n-1] at column c 
-    ds = [ (len1[i] + len2[i+1] + scoring[ v[i] ][ w[c] ]) for i in range(n)]    
+    ds = [ (len1[i] + len2[i+1] + scoring[ v[i] ][ wmid ]) for i in range(n)]    
     hmax = max(hs)
     dmax = max(ds)
-    print 'c',c
-    print 'lens',len1,len2    
-    print 'horiz score',hs
-    print 'diag score',ds
-    print 'score_max(',v,w,')',max((hmax,dmax))
     if (hmax > dmax):
         # horizontal edge
         i = hs.index(hmax)
@@ -757,25 +767,14 @@ def middle_edge(v, w, indel = 5, scoring = blosum62, c = None):
         l = c+1
     return ((i,j),(k,l))
     
-#assert middle_edge('PLEASANTLY','MEASNLY') == ((4, 3), (5, 4))
-
+assert middle_edge('PLEASANTLY','MEASNLY') == ((4, 3), (5, 4))
 
 #v = 'TWLNSACYGVNFRRLNPMNKTKWDCWTWVPMVMAAQYLCRIFIPVMDHWEFFGDWGLETWRLGIHDHVKIPNFRWSCELHIREHGHHFKTRFLKHNQFTQCYGLMPDPQFHRSYDVACQWEVTMSQGLMRFHRQNQIEKQRDRTSTYCMMTIGPGFTSNGYDPFVTITITPVQEPVENWFTPGGSMGFMIISRYMQMFFYLTRFSDMTYLVGVHCENYVCWNNVAKFLNGNLQGIFDQGERAYHQFVTWHSYSQYSRCSVGRYACEQAMSRVNSKMTWHWPIRDQGHEHFSEQYLSEKRNPPCNPRIGNAGQHFYEIHRIAHRVAMCNWAPQGQHPGGPTPHDVETCLWLWSLCLKGSDRGYVDRPWMFLADQLGEANLTLITMFHGCTRGCLMWFMDWEECVCSYSVVNPRCHGSEQWSVQNLGWRTCDTLISLWEPECDKHNTPPCLHWEFEDHPSQLRPVMMCDKYVQSIPTDAKWAWTYSKDFVISHWLIWTPIKLEECVFPQINRLWGTACNQGSQKIVIQNVWLRPSSFFQERSKCSDSSCILNVGGSNVNITGKETRTHVPILHMHEIDLISTASSGMRHNLILPHGMLMLHMNWHHSTRAMNPYSSLKLIPWTFQVCETDDRDQNVATHVADPCHKGEDQEIRCCKGGVDHQWKGDRMWMMCMPDMNYVKQDQAPSGTCEGACENYPADKDKCYMIFTIVFDYRRCTKKVCIWISGFPVDAFNLISIANAGFFCCWLEPTELKWRRTFYLGKGTQGWMCTFPHRNIIPVIICAGFGRWVQGEVPFRPVAQISAHSSDRRQGHHPPGTNMCHDYGDQYPIKRVGMQVEEDDGASYCDCAADWKLADMYEADHLSIGVIDFTDWIYPKNGGIWSEIIKSHFHWYHWETPQNTVGAFNTIVGINGSDMCIYHGNTQWEFGWCWKWLNHGHMRNQGPCHLGILEGRISKFAQVTSWWWQTKHDKDWSIEPYGRHWGEAGRPYTYNYCWMRWAIVYNHGNVISVELVPFMDEYPGKCNKEDVQFELFSPMQA'
 #w = 'LWFKFLQCIFQYFKDQQETNCIWTFSPFSEHICQRVCQVYWNWNTPSSRTSDPRELFANSTIHNNRCGEWRYMFYHTRTLVQTAPLMKETLHSDGKHSMYCEQRHFFRSSYLIKVNYDVSHYLELYTFSEIPWKLTTHGWDGFSWFLLVNSCCTFDIDGKCGILSQCGMSRAFRTRQEDAYHFQTSLMHLHLHLHVQEGKHEKADLFAQFYNMLPMHGGTCGRNTEPSDLFDSATMNKYMAEHPASCKACPNVSKECFVYWWSHDFTKKHKLIEFSCGRDTGQTTQRTWNVDENEGGKWIWRFHYFMRAKALQIDPKFKPYWNEPRAIMRPGHVTAAPCICAQHSQNETAVCNRDQMHIHAIEFQQYHSRAFGEVQTWCDIGKENENDFIYEQHWWLVGGTEGMAGVIWKFVCARCRTQDCDFWKTCLTYSAQPMMKVYDTIFYVNSINPWEFEDHPSQCDKCVQSIPTDAKYAICGKFVISHWLYWTPQKFEECVHNNVRCAPMGNRLWGTACMVIQNVWLRPSMGSHFSCILNVGGSNINIQGKETWTHVPILHMHEIDLISTASSGMETCKPCFLSGPTIHMGFSYEIRAQPYSRDYFCMDWMQEADEVDHNRCETVQPTLPLLQQFEWKTSCMGQRWITIFCDHCQIVCFSTFFCVMPTFLPNTSILDKFYCIYLSISWTHYCNVHALGFIMRLHYSYMGWKEHKRMHAWDIGLDELWAQEGIQRAQLWCGDEFEVAKYPEWITEARTAIATRPWFHNCYIKPWWIREKHLWFGKESKLDHGHRGAMFTPVANDNTEWMHHWYMFCWAGSKNRLKRQIKEKLIFIIKFMITEFGLFLMIDYTQCYIAWMWAYTGIACYIDWEKCLKHDLTTTDLGCCVYRLFKWYEVRHRAPPQVNTRLPWSQIPMVAIQCNIVDECKEQWHFSYKASFVVEYLCPGCCTNGNRWQWYQVKETPFMYAFAASIFGFHHENLVVFITGSVTIPNGLFGCIAWTSPKPVQKTPASANTIIAYDKCILMG'
-#print middle_edge(v,w, indel = 5)
+#print middle_edge(v,w)
 
-#v = 'NMIKPGLMNRCCPIWFQGDQCTIFSWIAEEYSHAEFKQILNLMPWPFIVRSQVYTPIRPTYEDCNRFHHDIRAAVVSHKEIALFKYVTHCQWEHMGEAEWMMCQTTEKYEPGHFNIFQCLGDSHFNSHAVVDFQADEHAHKVLSSWIFHDYLMRHNVQASNHCNSSGWWSMRPNTFFRDAQVPPRLILCGYHVFEFCAICKTGVASPPLRSDEYTMAICCYAFTCRWMSSGDFYLGGKLMEHMDTMLYHFFIGGKEHEAYGWGWIKQHWWYESYNAMKSEPVYSHWCVSNHPQMHTWHYGRDMLRVHTPMKCMVEWLFENAQYGMKFWDSQVQKGITDHRTNLHALMQPCKWWCPYWGCSNEHEPHSCPVVTAAIVRECWTQAEADQKLWLTEVCLSSKWRRSKLSDYMMTMCSWWWKAVMIRYQQMVWTWIGTATQTHDYWLRQDHNMRWNHPVVAGNYMQKRAEPFCFPCPNGYVKSYLCDGSMANCFFMHPGVWATCYETDFIFRECEDYQHTDWYASPSTSCIHAMYMCMKCMRTGWVDSFQWRHTVGKYEDIDRNVWCQDFGVRMRDFWKRVFIDRRWTMMQLMCSRYPRVYQVHFSEKVHISLEMVPPSHSYWINGKFCSAHAMHWMVTKGMPSYPGTCKECCDDWELKHPCFQGAYNINKYGQYNAIRCFDSQQHFGQSQTPKQSDPMRKHSFNTKIFNNEDGSKFDDDTADTMWMYEEWGGTDECHRYFNLMILLTWLKTFSAHQHCKFTREFMWCWATCTPIESIYLYLWGILNAWLPTANRLQKAEQVFSDTKIMTSWCGELKQSCIMETMKMFAIELLFNMVVKLTGHSHCVHISRHLDCCSAFFCHIKSIFFDDLACAPIANAVNHVKKPEYTGIYDSPLGGHSGMAKVESFGQWPVKGLNPNAMDIKGGMSASYQAAVWIGKGNGWSTHYHTFGLEEPAFTIAGPFRPVGGLPEGWIKDHNMQFFCHHGYKATLAKGHWTSPWKWKKQQCDFSDQRAEFYPYDSGYKCSHIKFHVQIKGAQD'
-#w = 'PAWKNPGCYASPAQQHWEETVQSIKVMRIMEDRDKPCRHNWAPKSENYKLWSLCVGLAERGPWLMRHLFVTCPPFHTEHGIAFWGRSEFTWKMFFAWPYHKESMTAPFQLIVIMIMIAACETVCPYKDWIELHVHEGWGTKTICQLNTGHLTTSQYLVTAMCIGNSRDGYLLKMCGYLKAVARQVPQVLECAVHIYYSGWLWKVFLWLNTEDYVENRKVHCCFASFQFRSIPHDDICYVILPSYNIQDVHDARHREDCERCWSVSKEAQVFTSCETIEMFYFNMIYTWKVYVACNFHECNSFFVSMDSKHDQPTHQCRIEDAVTEVSEFTTNHWMKKEDKLNKQDAWDCKPFDVFNLMFFHRFRFMNFYHPQSVWDNPYKCENARTPGDPCLEGMMQLPPPQTFDRETQNHMNYGMLDAKYQNNACEQEGQIHITSMCGAQRVMPAIQPTWNHPVVLVWSGNYMQKRNPPFCQRPRIGGMCPEGYVKSYLCHGRMAHCFFMHPGVWPCCYETDFIFRECEDYQHTDWYASPSHDYPIMSCYMCMKCMNTGWVDSFQWTVCKYCDIDINSKQDFGVRRDFNKRVFIDRRWWMPTMGWDHHMDHVTSSLGRANNMPLILMRRGYGVPSYKVYPKLWNGPHKYYTPHAMYRHQSPGREWRHYVVNSHDLWNWPVVVETWDYFNHHPFWGQMFMPRALIMPSAMHLQGAEGMKYYWMMSSISDIGQKYTAYSCNKRDYYWLKSHDITGKIIIKPQRSLLLIRMHRCDWPDCWPDWQPFCWLSEDPFKYFHPPSKEGKTAPQSWAYLENELTWDSVGTIKIQWIPKAHLMDEWGPNFKLPYSNHYKNKSIDSNCSTCNKKEFHKIHIFRIPSVVFDHTLCQEYTATKVVPTWAKFNPDARDDADQCWCSGDPYYASYIEVDKGEHRDDKGMLWQTSSPSVIQKINFSYACELLYCLNFFWFGGGAKQVGDKTDIHKCDICYNYPGLNNWWYEQYTDRVANLRQIHKPWTQGQGREQSMERWVWYYSDKEGIRAHGTGHHMMSTRTV'
-#print middle_edge(v,w, indel = 5)
 
-v = 'PLEASANTLY'
-w = 'MEANLY'
-print longest_common_subsequence(v, w, indel = 5, scoring = blosum62, verbose = True)
-
-#for j in range(len(w)):
-#    print middle_edge(v,w,c=j)
-
-def linear_space_backtracking(v, w, ioffset = 0, joffset = 0, indel = 5, scoring = blosum62):
+def linear_space_backtracking(v, w, ioffset = 0, joffset = 0, indel=5, scoring=blosum62):
     n = len(v)
     m = len(w)
     if n==0 and m==0:
@@ -791,25 +790,23 @@ def linear_space_backtracking(v, w, ioffset = 0, joffset = 0, indel = 5, scoring
         return ['|']*n
         
     ((i,j),(k,l)) = middle_edge(v,w,indel=indel,scoring=scoring)
-    
-#    print 'v',v,'w',w,'n',n,'m',m,'edge',edge,'raw',((i,j),(k,l))
-#    edge = ((i+ioffset,j+joffset),(k+ioffset,l+joffset))
+
     if (i==k):
         edge = '-'
     else:
         edge = '/'
 
-#    print 'middle edge (',edge,')',v,w
+    wleft = w[:j]
+    wright = w[l:]
+    vtop = v[:i]
+    vbottom = v[k:] 
+    
     # back tracking the graph bottom-right part
-    nv = v[k:]
-    nw = w[l:]
-    right_track = linear_space_backtracking(nv, nw, ioffset = k+ioffset,joffset = l+joffset, indel = indel, scoring = blosum62)
+    bottom_right_track = linear_space_backtracking(vbottom, wright, ioffset = k+ioffset,joffset = l+joffset, indel=indel, scoring=scoring)
     # back tracking the graph upper-left part
-    nv = v[:i]
-    nw = w[:j]
-    left_track = linear_space_backtracking(nv, nw, ioffset = ioffset,joffset = joffset, indel = indel, scoring = blosum62)
-    print left_track,[edge],right_track
-    return left_track + [edge] + right_track
+    upper_left_track = linear_space_backtracking(vtop, wleft, ioffset = ioffset,joffset = joffset, indel=indel, scoring=scoring)
+    
+    return upper_left_track + [edge] + bottom_right_track
     
 def backtrack_translation(v,w,bt, indel = 5, scoring = blosum62):
     i = 0
@@ -831,16 +828,43 @@ def backtrack_translation(v,w,bt, indel = 5, scoring = blosum62):
         else:
             valign.append(v[i])
             walign.append(w[j])
-            smax = scoring[ v[i] ][ w[j] ]
-            i += 1
+            smax += scoring[ v[i] ][ w[j] ]
+            i += 1          
             j += 1 
-    return (smax,valign,walign)
-    
-v = 'PLEASANTLY'
-w = 'MEANLY'
-bt = linear_space_backtracking(v,w)
-(a,b,c) = backtrack_translation(v,w,bt)
 
-print '**************'
-middle_edge('PLEASANTLY','MEASNLY')
+#        wleft = w[:j]
+#        wright = w[j:]
+#        vtop = v[:i]
+#        vbottom = v[i:]
+#        left_len = last_column_score(vtop,wleft)[-1]
+#        right_len = last_column_score(vbottom,wright)[-1]
+#        print 'score(',vtop,',',wleft,')=',left_len
+#        print 'score(',vbottom,',',wright,')=',right_len
+#        print 'max(',i,',',j,')=',left_len+right_len
+    return (smax,''.join(valign),''.join(walign))
+  
+def linear_space_alignement(v, w, indel = 5, scoring = blosum62):
+    bt = linear_space_backtracking(v,w,scoring = scoring, indel = indel)
+    return backtrack_translation(v,w,bt,scoring = scoring, indel = indel)
+  
+#v = 'PLEASANTLY'
+#w = 'MEANLY'
+#bt = linear_space_backtracking(v,w)
+#print bt
+#(a,b,c) = backtrack_translation(v,w,bt)
+#print int(a)
+#print b
+#print c
+
+v = 'PTGQSYVTTARTTAECRVLHVMPFNYHMASIMDSYVFLNFGPALCMHEWYLCTMRCGWSKVGLGYMTCFCKNYHMSVKDAAYDGDK'
+w = 'QVPFPTVDVIVCCTGIKCEPMNVGYDQQMKDCFICTREYDIRRLHTIVCGSEWACRLWIEADWEDCEKSFRDFDAPINIVQYAVWRANV'
 print longest_common_subsequence(v, w, indel = 5, scoring = blosum62, verbose = True)
+print linear_space_alignement(v, w, indel = 5, scoring = blosum62)
+print linear_space_backtracking(v, w, indel = 5, scoring = blosum62)
+
+v = 'PTGQSYVTTARTTAECRVLHVMPFNYHMASIMDSYVFLNFGPALCMHEWYLCTMRCGWSKVGLGYMTCFCKNYHMSVKDAAYDGDKEMDGMTKWCVMPNCMWENEAQDQMQAWDSKGWQDFCDDIKAGMQFIWDSEPHGNFSEIMSMPFDIDVTIFHMQEPEIVQWTMNPQHSPHRPKSCTMASWRTQHHTAWNHCPVSASAFQPQVDVCDNVRFYGETAMNIVGGQAEAEKMKIHPSYQGHIHLCIGNEDTDGQQLWCQNHMQHEPFRYNDSDGDVTYQKHPACAAIPNIHSWFQPWGIDYQSNRQFGNQMDECYDLWALRVWDEPSVTWYYRHDLHDHSESWQRCETNVMWYKGAKDMRGDLWSPRVMIMVPFLTVWRCGVTCGWLWPKSFSKAMMRAQKIHEFPQQRIKTNGAKPDNEREWQAHHAFNTECKFVGPKPILLSKPWRQVDYDYCSFSDDMHFRKCVLTDEFFNVVSTKMVSQCWFWADTLNPEVSNQFMTQEYIVKMTSVCEVLNGVGGLPFVTADSCSSPVIEWGLWTNDQWEGFFKLYWVMLDNDKNPVKWPHNRGIVHGMWPIWWIEQNPIKVGQACMWYPLIDNYWEDNRDVLKPKEDMMAIDISGQVKGWATDIRPSSWSLYIIPDMVWRGSLCDLARVEYEHKPWHNCTTYHMRCVIFYYFAPIGNHNDATIPGWAEWCYWPKMWEGYVMVNCFTEQQHQAEAAVAWGWYGCTPNVPPVSPIMQSFKMFICPNQFQDLKLMQDPCWVLNKFSVNERQLDHCPMDASDHWSPSHNRWNLTFQAWPGRQEFAWPVLFFFSDVWWDAHDYIYVNVMGYTVYHAWSASWVVTQLGNIHGECWNCMVPPEIVMSNTNQKYEHYMIASREMVTPHRRRYAVCTFRNLAWKSFDQQFFCRENFIGIFPADCGIIKCEVFRDLQEFFDRENSKCDQNSQKNMHKFKYCFQFQPQDPVKQRLNPVHPWCRSEEDGLRTQEDIVRPAQYNEWPMHQNDAKLVQGCCIYKYKRKWIPRKYLKTYGTNMPEHFYYQRQVLSRYGSMRRMWIKNEQYVDHRDRYVMLEPGCETFFYSFVMEWDEINDNNSRSKEVAPPKEFDYMYNNTCHDTWRFSEQVKNDNQTQFFVKQTFVRLHLQLDQILPEAIFMSFTLDWPQYGYQIAKGNTFKCMQFTNYKGSTFGWLDVGPGNRPRHWWKTVFWQKWWISMWLDVQDLSKDAFDNMWEKQAMQKPKFHDTRFLQAESKDTRSKEADSKVDPWWRQHSQERFYPGGSECCWMDALHPLKLRNFVEFVVVTKLPNCLWHAFFQYFPEMWLCFMDHASPKQKVWRMNCYRADFCYFMCELGYETDDRSAETAIVMYEPMQMGWNHWWWLTWLHMACTLIIDHIMMNLQVALYGCIQPLNFWMATFHLVWQAKVFFFFAFERFHTHVIMCQKAKENESHRLQPEERMSKWHYTCCGTMFHVNWHAEQGKSGMYTQALRLTHFTVWDQGSHLMCTGIYMDMPQNHCSWARHRTDPCALVVHWGPKVPKPNDTFGCHPNNSEIEPFPPRDDAQANHIEDCHEYRFCGMTHNAYTDHPGFLRNCTENVTEKIMEGPLYPWDNDRGSHAQLVMWCRVASEAVQWVSSGYKGINSAYRYVNLWGKHICRAWQDWDWVGVHIQCNHIWGQETDPDEQWLCIHENGINFFDSNLADYTAEQEDFGDWYCQKSHLHSKVDVKQYSQIATIIWTWQHTNCGCSTCWVPLHRIFSLDNDVPPCIQVYMGDKRQMWRNKDNHNKSQMTYMKLECMFPDKDFRQQSTGERPVTELMCKNIWTVHYCYIAMFYDVEPKCDIEDCYMGVAYMMSFAEGFMHMYKALVCPKSGSMYDWTVVQIIYTWQYFWHRPETTESTWTNQRHPLQLGWNTSLMENIFAIESMKKMTCYAKEPTMRRAAIWLVQMSSYMVHHKCPRHYNEHLRLLVPCSWCQQDKWNESCQWHHPDPYIMKPSYAWWDLLNTCDPVWRRNTYCCKMANRAAHQDWSSNGDRHNYPVIRMENTSDTHNMNMYESVPERPDTFCGLNSSLQGHEWQMYSQAHHPDMFTENMQDYYYGTIVFCHAGICWCWLMHIQYSCCHYACCIPLKPLCAFIESQCQIVNQSFASRTTCQDQSFPHYLIYEDFVIAYEIWDKTAPQMFPFYYYWRWVDRTDCHVQDETDGSWTKEDCAGCSCSRELSYMGFNWVFPYSRTVQLMMEHVPGWCYMSGVFLKLHPFVGMIQKGKTHHIWHGDRWHGKGYNVSTDYYDCVYYEPCLRNKYMSDVIGYTGWLGWVQTLTDHVKSSPSKGRIPVWNQFTQVKKYQVMEHLFYKGAHQDHICVTCEGWVMPPNQCFWFQDQDSQCSLQSDQMERLEAVCYPTMWYRGAWKRHNHTRLWLTTYDPGYCRNRDWAWVTCCNCIAALMQQESNRKYQWCWCYWSTNHPMHNSDIYVVWDDDGERPDGCSNEIRQAKRPCTCDISDARPLKIYMIYCFPCEGKYIDIWMGKMRAFDFLNFMDGKFTIRDGAIFPPQMVPCNVLVFELVYKSVWAETPTIRGWYQCWPAQKVYANGWISMLVIMDFAQKKFVGHDLSTATCMNHRVDCFKNNVRRHVEPPLMLIMNKIWCEHDFMTAMDVIIYASPDMYMPGKPYLGTFQYPYLYKHGSSDYVELEASKINGYMPYWCHESEDSTCHALHDPAHCDLRWMFMCCPRTTKPYVWMCNTWIRYDKQDLAPVNSFIPAHQDVHPYCTCGRAVWTQKRFWKAWWFLITCPDPHDSYRSFDEVGEPIETACRDDCVINIYHSQYNMSSWAKAVAFIKWMTPLQPYEPCFCQKMEFKQWWEKLCVAWSQPVFNFSIPKHVFIVERYIEDEHWEVIYWMKKFVIPKLHMGPWQSCTIGYREYACIGIDAHDPYRCGDKNMANMRFPWWDIISFLLFQPLPMECSYHGQGTFCLKWIAARNGTYQFRIVEVYKFSSAEVNRNTQYFSHHHMMLMPHNFYHMGTFDYCWLKYPFPTMDWNVSTTSPNILGLENHKDLCIMVMNCEREMTPERIMQYKVLLSLWRENVVMPCCLIALVNLLGQNKENTPLDCPKMPMVMDYHPRKFWLSPGFIGKYHIAQRTRQWRLIFCPAQTKMDVCASYPFPGPRTDHTRSMWLMGHSTAPEFMFMTNKNMQIGCPPVGAQGHVEPPTRQRKGKHQYVCEPWKMWKHKPQWRAWAINWKKVITCWSVSFDFPWDSIFTVKDCELRGGSFAMMRKAYQPPRMSQLPWVVKCNFSPKQGYEQYITVDGKTQKTRVIDPMPDPHHATYGIMFSHQYTVNWIHNCERLTMAKINRVYFTIIADRWGHYCVNINHQTLQMDDMMCYDDSVSGQGYLCMCCTIIPWGQCVNAYIHRCWHCTDVYIHRLLPEQETVFQFCDNHMMAQMHLMPTLNEKGSFSWQRVMSGGVFWIVNGCNMYAFSHHWLAPHHDRTNQGVYMLSQPQMCWALNDDHTYHKNNINAWEPPIGTHTGWLRAEEMTGSPDRLLLIWGFMCRAMYSCHLDACARNLQFNFLMKVGHHNQHQYWAWCEQCLDCKSWDTNASSKLEFNYETLTDLTGHPPQRPDVFFCDDCVAYCEFLKHTSPLDRWYEPRPRRLGQWVKSLGSGNPPACFEWCYIRYDCWYCNVVPIEHTEDPMHWHENWDNNCIGQQHWINVMCQMMTPNNAGIHPVRPCIHPDDNVRMPYECHNMEPERVQFVDQVTGAPYRANATLPCDHDGFEAFMAPDLTETYVQDQKYCKGVPFQMSKPNQASIPLWSYILYSCEMACIEIYIMKGWMLKQSFHGSPHKTVTCIGTHCMIRHQACCNNDKFAVANRAHEFRWYWARLNGQKMIEFFESFRDMIKISPCMRWRDDAPGSGLHIWAAHIFMEVEKLVWTLAIMNCAYAAYPVMEPHPLGWVDTGYVKSHFQLAYSICFCGQIINRIMILQARYQYVAPATCRLHSCGDDAALTPVNWSFNMGHGMPNINYILNWNRKRWGNFRHQMHIPPGQQCRCWRALKDDNVMHEDTT'
+w = 'QVPFPTVDVIVCCTGIKCEPMNVGYDQQMKDCFICTREYDIRRLHTIVCGSEWACRLWIEADWEDCEKSFRDFDAPINIVQYAVWRANVETQCPGYLNRTQWIMIGYWFIGTWNAVLIVPKSPAQIETDGIVYKIPCNRYFEHGPYFWRSPWAGPYPTVDRHDSVCHGHLKYGSLPSCQNWEFARPHDLGDACMWEKPQLQLNWNPRPRAIISTGTFSPEQTFWDGMPWKYFWKCPSSVQANKRLYKVLTVVCRQENHGYKETHRKFHIKCLVGQLNQPKPWCVYCVVYRSDYPPPQRWTFWGTPQYIMCFVKPHKLSDESAIGNWWNIGPCDRLVASAWEHCKRLGWYPHGWAKSMFPHMNIMGCSRKFRKASIEWPIMSHVGYCAHWHPFSRRVQFESNINQSLRWVVMSSFKDTDDHVALVCLTPAGEIPVTNVGQALAEQSYRIWSAQEHRAPFTGWMNLFCSIGMTMYIEKCSREPIIKDHDCFNDTADPSDTKVTSWMRKYWIEEDPTWRSNMIHMMGSIFSCNRMSNFMCYPESVRADWPIELWPGRLAIGFMNMGVASLEHYFPFIGFWVDYAPSPSEEHQWRHDAYAYDEVYAMVPMDCKLEGQTYTQCMMWKIDLVLLWSGNSEICIEQHESFSRSIYGHVSKAQAVMKYARRGPAHEQFVTGKSQHSQDCTHISPKIMLHSSIRIVAKHDMLRKEPHSDYHMLKTEFQDKYERMTTMMWGFPDWELPHTEQRHKLAGEVRQATASHYQQYYKPDHGTHEYVCPQPCLIAPWASGTPEFEMAYQLTCNGMFAKCYNRRTGQQVLQISVSHSCMRTKMANWYPSMDMFLEMSNGNADLASNRIGHFSYGHEFVEHPNVMWRPDGGRCHGHEAICNGLAYQYMWPVYHNRCNAKWVEVVHHQDSNFLPMIHGAGSHLHHQLAICYLLVCPVTGARCVGENLINFLVIICNWELIVFLIIEMVAEGLRRPMRNKCQATSFNLETYFRKKRMQCTLNRPYMTRTRRPHLWGPELRATNKQRDLPVTAVPCNQAQCKKFWGGVQDQSNDDVNWRDTKWDFSWGFSPAKVHWHQCVYDQGFHNLEYNPCLHWIWYMYTWMIAFERTVGKACHNWEQIPIDSLNNFQVHTDIWIELHCMNMSPYAFVNYSTCNAVAAKWYLELAIAHQSEPQKWFYFVSFILDSRFSPHNMVFYATSDGYRDKLKPLEFDIMMKRGTWTPEHWQSFTPHRKISPVHSTGIHEAVDIYQYFHEPFAMEPACKCMVMIYTVAIVHFKCIANHEVSGGTEINLVRCFHIWHCEEWKYMCHSWFEYNAIFRCEAMLCWKLFCGQSPIDMLTVEVKILWAVTPQMIACADAYLRPFMDWIGAFSLCQQTFCDLFAWPPQVQRFYWTVKEVEEQWYSHWVGKSVNINSSSDHNNRWVLWPYFKLLFNVANHQPDHCREAVWYNVASDRPHVFCMMAGGVPQKTMINQFRHSIIFSVQNPHFYGMQPTWCSERVALVCPKWHAPNAIPPPKFMHARAFWAVPTKCVYQEHDHYWHNHKTSHFPGTSPDIYEVRAQFRSAETHNHPYNDYKPLMFVKTHITIAKFIGGKMHMMGTQGYAMRPCDWESKMMVTFVKVVPPALTCIFFIPAQPHTMTGWALYDRYMVCRMCHEVEPCKWFVIDVDHNQNDSIMRSHPSERGTTGICDQKHHNLQHCNWELDGPPEISMTYPILNSELDLGWYHLWCGDGPMHPKFGRDRGVTEWKVTIKTPFNLAPTIENIDAQSITRWSQYMINKADMWQLQRVPHKCTPKDCYFGQQSFNERELCIWLADPLMAIAMFYKPLVDPPIEMEPKIESFAMYKAVPKSGSWIVVQIIYTPETTGWIEHYDTSTWTNQRHPLLLGWFSMWSCFENIFAWESMKKMTDYAKEPTMRRAAIWLGEDSQQMSSYFVHHKCCRHYNEHLRLLVPCSVIQRCQQDKWNESCQWHHPDPREPWQFGIKKPSYAWWDLLNTCAPFYPDHKNTYCCKMANRAASQDWKSNGDRHNAPVIRMENMYKSVPERPDTSKNDQHPDMFTENTQTIVFCHHDIGWCWLGHIQYSCCHYACVIICIEMLKPLCNWMHRIESQCTIVNQSFASRTTCQDQSFYLIYEMFVIAYEIWDKNAPQMFPYYYYWRWVDRTDCHVQDETDGGCWTKEDCAGCSCSRELSYIEERGYYWVFPYSRTVQAVMMEHVPGWCYMSGVFLKLHPLFHYDIHQTYIMRAVPTEWTQDMPKDHDWKLYQWDLQRKWSYQVGDELDVGPGCLRPAVAAAYFQTTCILCATAYEDYSEKNKEYRHYTACMSGGLFNHGQMESYKFDWMDWHRQGGDEKPDGGDIEHCYYCSNEASYTPATYGYMCNENGSALGRFMVMFVRMFVRASCSNRDLGDRWQWIFTDYWHCDNERAGCEKDMNQNFGGHWPLDYCFEFGWPCCEQRDCMHLCMCSYMVRVSQDFKSIWDERLGMIRDWRFFVSRNLQCMAWTTYKMEFCLQTYSQFILPARLQEVCDGLWLSDCHNYNWGRIMKWGQLKKVMVPRWEMMIAMRWDTRERWMYYVSHSDAEVAEPSVELNLGGMHAIKSTTWMWVKSTKTCRECMNNIYSVFTTCKKKIAMTFTHKPIKHDKPHTFRCMSNQTEPVCHCHDFHCIWKGFGLMHSGLESQFVDIHCKRPWIIHDKRQHSLGIAALKTCYCGVRKNGRGAQTNGRETGDGAEGIQLQIHLHAVRLKVVAHFSNAVLYDGSKRYMENQKHHMTLKSPSNMPYTNGCENGWYRPCHVQAYVANADFASPLEPMVYTKWWDEGSSWLKNRRGCQATQKSQKPKSMRELWLVTHLVGAHEGNCDHRLLFQYPRWIFHSNKYPDGWKHAHRAWDPDSYGDFWVKHGHHDLLLACKEEVLCTLYNFCKQELENLGWVCCVLMNVCWISHFGNGNYPYWHHRHWLHMENDCDIAEELKRVQGYLYRHKWWVGWELCDFFQANQDNHESRLQRLHQHRLTHNHCRFPKVRQQDIAVFWEVVSICGANRLVHIFACMIIKDAHMVERVHNLCDPTWWPQHLAMNSMGWYMQKLVEFMTPCGNLWSRKFCQIQMHGWVYFPRHWWYSIPDEAMVGVRNNESTASVIRVYFDEDINPTNSNPNRKPENHCKELLLNMMGCVRCAFNRKLTPHKEQSVSYMFIHQCYPLCAYNMRCMTTRCESHMTHEFQPGWRRQMETLVICRDAIVQFVMTVMIKRRMTDYSMSITYQEWTFKCLRHNFALRCKSGCAFVLEDQDVQLHGLPMKWYAMFNDMYMFKCIRTYIDEYASPDYNWNQPRWLITYATNTGSHAKTRQSNENCRRRIFYDYNRGMWLVLCTRERIHWWSLPYRKVHVLIPGHISASEHYQNLNNPPMYKAGMAEKSPGWQVTICRIEDVRPFDDDHLYGDEQEVHNSGCAQDSVHVKKMTPVLIDCGDRPIEWTCFQADYYNKPTHRFWRPDVKHPLNKYCHGGCDPDSNRSYCKWEDTCEDTTIKYSRTHSDFNVGSMATKYIDREHNKGSEKWFEGLGQRCNQPGEMKVNFTLEIMTFKPRMRSFDHEPESAMHNQYEFLNDGTTCMGFEKKGIHFFYKNICRNLQQYQCHCPLCYRMLPGQCECQNIIVSPRSVLQHLNCKQNENMKTSSACHRKIMHYKMKIYGVSIERRDQTFAVRMPNFECECWDMWEGSSWLKKWIHRCNDCNLDAPLERPAHFKHDSFWCTFGIWLQYCCCYSGFFCSMAHMMNYCLWCWEPLFPDKWDEYFSLTYDGVEGWCHDLIEQIDGEMLYGLTIPEIMPEGYPRVADDHFPYPEPSDDDSHNDKSEKKRSYLIPSFWQACHCCHFKTQQKCWACNSRIYLEADWLKHAILPIGRRLKRVVTKMHRQVERPVSLMRTFFNPVGCPDTSDNTGLPDLMNWVGQGITVGQCWHETIYGLSAVCWSPMLNTQTAEWTGGKYKTMDGGIARKEGYLGVKKLTQFGDTAWCTWEGHCDTWMRDYMMHWWYATEDMYQKLIGIG'
+(a,b,c) = linear_space_alignement(v,w)
+print int(a)
+print b
+print c

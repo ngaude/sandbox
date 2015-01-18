@@ -188,18 +188,13 @@ def graph_to_genome(g):
             assert orig > 0
             visit.append(orig)
     return genome
-        
-
-def two_break_distance(P, Q):
+  
+def colored_edges_cycles(blue, red):
+    '''    
+    returns all alternating red-blue-edge cycles
     '''
-    CODE CHALLENGE: Solve the 2-Break Distance Problem.
-    Input: Genomes P and Q.
-    Output: The 2-break distance d(P, Q).
-    '''
-    blue = colored_edges(P)
-    red = colored_edges(Q)
-    size = max([element for tupl in blue+red for element in tupl])
-
+    cycles = []
+    size = len(blue)+len(red) 
     adj = np.zeros(shape = (size,2), dtype = np.int)
     visited = np.zeros(shape = size, dtype = np.bool)
     for e in blue:
@@ -209,11 +204,11 @@ def two_break_distance(P, Q):
         adj[e[0]-1,1] = e[1]-1
         adj[e[1]-1,1] = e[0]-1
     
-    n = 0
     for node in range(size):
         if not visited[node]:
             visited[node] = True
             head = node
+            cycle = [head+1]
             # arbitrary we start with a blue edge
             color = 0
             while (True):
@@ -221,11 +216,29 @@ def two_break_distance(P, Q):
                 if (node == head):
                     # cycle found, we got back to the visited head node, 
                     # just break
-                    n = n + 1
+                    cycles.append(cycle)
                     break
+                cycle.append(node+1)
                 visited[node] = True
                 color = (color+1) % 2
-    return size/2 - n
+    return cycles
+
+def two_break_distance(P, Q):
+    '''
+    CODE CHALLENGE: Solve the 2-Break Distance Problem.
+    Input: Genomes P and Q.
+    Output: The 2-break distance d(P, Q).
+    '''
+    blue = colored_edges(P)
+    red = colored_edges(Q)
+
+    assert len(blue) == len(red)
+    assert len(blue)+len(red) == max([element for tupl in blue+red for element in tupl])
+    
+    size = len(blue)+len(red) 
+    
+    l = colored_edges_cycles(blue,red)
+    return size/2 - len(l)
 
 def two_break_on_genome_graph(g,i,j,k,l):
     '''
@@ -236,7 +249,6 @@ def two_break_on_genome_graph(g,i,j,k,l):
     the 2-break operation 2-BreakOnGenomeGraph(GenomeGraph, i, j, k, l).
     '''
     bg = []
-    
     # equivalent and more elegant but not accepted by the grader ...
 #    d = {(i,j):(i,k), (j,i):(j,l), (k,l):(k,i), (l,k):(l,j)}    
 #    for t in g:
@@ -253,20 +265,6 @@ def two_break_on_genome_graph(g,i,j,k,l):
     
     return bg
 
-#genome = '(+1 -2 -4 +3)'
-#i,j,k,l = 1, 6, 3, 8
-#
-#genome  = '(-1 +2 -3 -4 -5 -6 -7 +8 +9 +10 +11 +12 +13 +14 +15 -16 -17 -18 +19 -20 +21 +22 -23 -24 +25 -26 -27 +28 -29 -30 +31 +32 +33 -34 -35 +36 +37 +38 +39 -40 +41 +42 -43 +44 +45 +46 -47 +48 +49 +50 -51 +52 +53 +54 -55 -56 -57 +58 -59 -60 -61 +62 -63 +64 +65 -66 -67)'
-#i,j,k,l = 116, 118, 73, 72 
-#
-#genome  = '(+1 +2 -3 +4 +5 +6 -7 +8 +9 -10 -11 -12 +13 +14 -15 +16 +17 -18 -19 -20 -21 +22 +23 -24 -25 +26 +27 +28 -29 -30 +31 -32 +33 +34 -35 -36 -37 -38 -39 +40 -41 +42 -43 +44 -45 +46 +47 -48 -49 -50 +51 +52 -53 -54 +55 +56 -57 +58 -59 -60)'
-#i,j,k,l = 98, 95, 2, 3
-#
-#genome = '(-1 +2 -3 -4 +5 -6 +7 +8 -9 +10 -11 +12 -13 -14 +15 -16 +17 -18 -19 -20 +21 +22 -23 -24 -25 -26 +27 +28 +29 +30 +31 +32 +33 +34 -35 +36 -37 -38 -39 -40 +41 +42 +43 -44 +45 -46 -47 -48 -49 +50 -51 -52 -53 -54 +55 +56 +57 +58 -59 +60 +61 -62 +63)'
-#i,j,k,l = 122, 124, 74, 72
-
-
-
 def two_break_on_genome(genome,i,j,k,l):
     '''
     CODE CHALLENGE: Implement 2-BreakOnGenome.
@@ -280,6 +278,79 @@ def two_break_on_genome(genome,i,j,k,l):
     return genome
 
 
+def two_break_sorting(P,Q):
+    '''
+    CODE CHALLENGE: Solve the 2-Break Sorting Problem.     
+    2-Break Sorting Problem: Find a shortest transformation 
+    of one genome into another via 2-breaks.
+    Input: Two genomes with circular chromosomes on the same 
+    set of synteny blocks.
+    Output: The collection of genomes resulting from applying 
+    a shortest sequence of 2-breaks transforming one genome into the other.
+    '''
+    red = colored_edges(Q)
+    path = [P]
+    while two_break_distance(P,Q) > 0:
+        cycles = colored_edges_cycles(colored_edges(P),red)
+        for c in cycles:
+            if len(c) >= 4:
+                P = two_break_on_genome(P,c[0],c[1],c[3],c[2])
+                path.append(P)
+                break          
+    return path
+
+k = 3
+a = 'AAACTCATC'
+b = 'TTTCAAATC'
+
+def shared_kmers(k,a,b):
+    '''
+    CODE CHALLENGE: Solve the Shared k-mers Problem.
+    Shared k-mers Problem: Given two strings, find all their shared k-mers.
+    Input: An integer k and two strings.
+    Output: All k-mers shared by these strings, 
+    in the form of ordered pairs (x, y).
+    '''    
+    def reverse_complement(pattern):
+        rev = {'A':'T', 'T':'A', 'G':'C', 'C':'G'}
+        reverse = map(lambda c: rev[c], pattern[::-1])
+        return ''.join(reverse)
+    
+    def kmers_dict(k, text):
+        ''' 
+        Solve the String Composition Problem.
+        Input: An integer k and a string Text.
+        Output: returns a k-mers:[positions,] dictionnary
+        '''
+        kmers = {}
+        for i in range(len(text) - k + 1):
+            kmer = text[i:i+k]
+            kmers[kmer] = kmers.setdefault(kmer,[]) + [i]
+            kmers[reverse_complement(kmer)] = kmers[kmer]
+        return kmers
+    
+    shared = []
+        
+    bkmers = kmers_dict(k,b)
+    for i in range(len(a) - k + 1):
+        akmer = a[i:i+k]
+        if akmer in bkmers:
+            shared += [(i,j) for j in bkmers[akmer]]
+    
+    return sorted(shared)
+        
+
+fname = 'C:/Users/ngaude/Downloads/dataset_289_5.txt'
+lines = list(l for l in open(fname))
+k = int(lines[0])
+a = lines[1].strip()
+b = lines[2].strip()
+with open(fname+'.out', "w") as f:
+        f.write('\n'.join(map(str,shared_kmers(k,a,b))))
+
+
+
+
 
 assert len(greedy_sorting([-3,4,1,5,-2])) == 7
 assert number_of_breakpoints([3, 4, 5, -12, -8, -7, -6, 1, 2, 10, 9, -11, 13, 14]) == 8
@@ -290,6 +361,19 @@ assert graph_to_genome([(2, 4), (3, 6), (5, 1), (7, 9), (10, 12), (11, 8)]) == [
 assert two_break_distance([[1, 2, 3, 4, 5, 6]],[[1, -3, -6, -5], [2, -4]]) == 3
 assert two_break_on_genome_graph([(2, 4), (3, 8), (7, 5), (6, 1)],1,6,3,8) == [(2, 4), (7, 5), (1, 3), (6, 8)]
 assert two_break_on_genome([[1,-2,-4,3]],1, 6, 3, 8) == [[1, -2], [-4, 3]]
+assert [two_break_distance(p,[[1, 2, -4, -3]]) for p in two_break_sorting([[1, -2, -3, 4]],[[1, 2, -4, -3]])] == range(4)[::-1]
+assert shared_kmers(3,'AAACTCATC','TTTCAAATC') == [(0, 0), (0, 4), (4, 2), (6, 6)]
+
+#
+#P = '(+9 -8 +12 +7 +1 -14 +13 +3 -5 -11 +6 -2 +10 -4)'
+#Q = '(-11 +8 -10 -2 +3 +4 +13 +6 +12 +9 +5 +7 -14 -1)'
+#
+#P = '(+4 +1 -7 +10 -8 -2 +5 +6 -11 +3 +12 +9)'
+#Q = '(-8 -7 +4 +6 -1 +5 -10 -11 +9 +12 +2 -3)'
+#P = genome_str_to_list(P)
+#Q = genome_str_to_list(Q)
+#path = two_break_sorting(P,Q)
+#print '\n'.join([''.join(format_sequence(p)) for p in path])
 
 #genome = '(+1 -2 -3 +4 -5 +6 +7 -8 +9 +10 +11 -12 +13 -14 -15 +16 -17 -18 +19 -20 +21 +22 -23 -24 +25 -26 -27 -28 -29 -30 +31 -32 +33 -34 -35 +36 +37 -38 -39 +40 +41 +42 -43 +44 +45 -46 +47 +48 +49 +50 +51 -52 +53 +54 -55 -56 -57 -58 +59 -60 -61 -62 +63)'
 #i,j,k,l = 8, 10, 116, 113

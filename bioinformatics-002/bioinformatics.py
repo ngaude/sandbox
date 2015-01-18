@@ -24,7 +24,6 @@ def pattern_count(text, pattern):
         if (text[i:i+len(pattern)] == pattern):
             count = count + 1
     return count
-
 def frequent_word(text, k):
     kmer_count = {}
     for i in range(len(text) - k + 1):

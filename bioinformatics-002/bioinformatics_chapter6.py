@@ -349,7 +349,9 @@ with open(fname+'.out', "w") as f:
         f.write('\n'.join(map(str,shared_kmers(k,a,b))))
 
 
-
+k = 3
+a = 'TGGCCTGCACGGTAG'
+b = 'GGACCTACAAATGGC'
 
 
 assert len(greedy_sorting([-3,4,1,5,-2])) == 7
@@ -460,3 +462,10 @@ assert shared_kmers(3,'AAACTCATC','TTTCAAATC') == [(0, 0), (0, 4), (4, 2), (6, 6
 #p = permutation_str_to_list(p)
 #print 'n=',number_of_breakpoints(p)
 
+
+
+
+k = 3
+a = 'TGGCCTGCACGGTAG'
+b = 'GGACCTACAAATGGC'
+print len(shared_kmers(k,a,b))

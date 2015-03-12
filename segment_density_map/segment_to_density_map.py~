@@ -118,6 +118,3 @@ didx = build_date_index(dxy)
 for i in range(0,80000,900):
     t = str_date(epoch_sec('2014-04-01 04:45:00') + i)
     density_map_from_date(dxy,didx,t)
-
-# encode
-# mencoder mf:/*.png -mf w=320:h=240:fps=4:type=png -ovc lavc -lavcopts vcodec=mp4 -oac copy -o output.avi

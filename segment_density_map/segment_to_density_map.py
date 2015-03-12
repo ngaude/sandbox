@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def epoch_sec(t):
-    #?t string datetime in a 'YYYY-mm-dd HH:MM:SS' format
+    # t string datetime in a 'YYYY-mm-dd HH:MM:SS' format
     # return elapsed seconds from epoch time
     dt = datetime.datetime.strptime(t, '%Y-%m-%d %H:%M:%S')
     s = time.mktime(dt.timetuple())
@@ -15,13 +15,13 @@ def epoch_sec(t):
 
 def str_date(s):
     # s elapsed seconds from epoch time
-    # return string datetime in a 'YYYY-mm-dd HH:MM:SS' format
+    #Â return string datetime in a 'YYYY-mm-dd HH:MM:SS' format
     dt = datetime.datetime.fromtimestamp(s)
     sdt = dt.strftime('%Y-%m-%d %H:%M:%S')
     return sdt 
 
 def resample_date(t, nt, sec = 900):
-    #?t,nt string datetime in a 'YYYY-mm-dd HH:MM:SS' format
+    # t,nt string datetime in a 'YYYY-mm-dd HH:MM:SS' format
     # return range of datetime evenly spaced sec seconds between [t, nt[
     # return range of percentage [0,1[ of distance from t for zipped datetime
     s = epoch_sec(t)
@@ -91,13 +91,9 @@ def density_map_from_date(dxy,didx,t):
     (d,x,y) = zip(*dxy[didx[t][0]:didx[t][1]])
     assert (not d) or (t==min(d) and t==max(d))
     plt.figure(t)
-    bins = (range(550000,950000,2000),range(2050000,2550000,2000))
-    plt.hist2d(x, y, bins=bins)
-    plt.set_cmap('hot')
-    plt.axis('off')
-    #plt.colorbar()
-    #plt.show(block=False)
-    plt.savefig('density_map_'+str(t)+'.png')
+    plt.hist2d(x, y, bins=50)
+    plt.colorbar()
+    plt.show(block=False)
 
 # df expected fields : dat_heur_debt,x,y,r,ndat_heur_debt,nx,ny,nr
 df = pd.read_csv('ngaude_paris_geneve_segment.tsv',sep = '\t')
@@ -106,7 +102,7 @@ df = pd.read_csv('ngaude_paris_geneve_segment.tsv',sep = '\t')
 # filter null duration segment
 df = df[df.dat_heur_debt != df.ndat_heur_debt]
 
-dxy = df.apply(lambda r: randsample_segment(r.dat_heur_debt,r.x,r.y,r.r,r.ndat_heur_debt,r.nx,r.ny,r.nr,sec = 900, n = 1), axis = 1)
+dxy = df.apply(lambda r: randsample_segment(r.dat_heur_debt,r.x,r.y,r.r,r.ndat_heur_debt,r.nx,r.ny,r.nr,sec = 900, n = 4), axis = 1)
 
 # flatten the random sampled position
 dxy = flatten(dxy)
@@ -115,9 +111,7 @@ dxy = flatten(dxy)
 didx = build_date_index(dxy)
 
 # map it
-for i in range(0,80000,900):
-    t = str_date(epoch_sec('2014-04-01 04:45:00') + i)
-    density_map_from_date(dxy,didx,t)
+density_map_from_date(dxy,didx,'2014-04-01 12:45:00')
+density_map_from_date(dxy,didx,'2014-04-01 16:30:00')
+density_map_from_date(dxy,didx,'2014-04-01 18:15:00')
 
-# encode
-# mencoder mf:/*.png -mf w=320:h=240:fps=4:type=png -ovc lavc -lavcopts vcodec=mp4 -oac copy -o output.avi

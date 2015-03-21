@@ -20,14 +20,29 @@ def make_trie(*words):
     """
     root = dict()
     for word in words:
-        print '===>',word
         current_dict = root
         for letter in word:
             current_dict = current_dict.setdefault(letter, {})
         current_dict = current_dict.setdefault(_end, _end)
     return root
 
-def dump_trie(root):
+def trie_in(trie,word):
+    """
+    return True/False)
+    whether word is contained in trie
+    """
+    candidates = trie.keys()
+    if _end in candidates:
+        return True
+    if not word:
+        return False
+    letter = word[0]
+    suffix = word[1:]
+    if letter in candidates:
+        return trie_in(trie[letter],suffix)
+    return False
+
+def trie_tostr(root):
     s = []
     def dump_leaf(curr,parent_id):
         current_id = parent_id + 1
@@ -40,37 +55,34 @@ def dump_trie(root):
     dump_leaf(root,0)
     return '\n'.join(s)
     
-def make_trie_l(*words):
-    def insert_word(trie,word):
-        if not word:
-            return
-        # given a root subtree insert letter and return new root
-        letters = trie[0]
-        branches = trie[1]
-        letter = word[0]
-        if letter in letters:
-            # path already in trie
-            i = letters.index(letter)
-            ntrie = branches[i]
-        else:
-            # add a new sub-path to trie
-            letters.append(letter)
-            ntrie = ([],[])
-            branches.append(ntrie)
-        insert_word(ntrie,word[1:])
-        return
-            
-    root = ([],[])
+def trie_matching(text,*words):
+    """
+    CODE CHALLENGE: Implement TRIEMATCHING to solve the Multiple Pattern Matching Problem.
+    Input: A string Text and a collection of strings Patterns.
+    Output: All starting positions in Text where a string from Patterns appears as a substring.
+    """
+    t = make_trie(*words)
+    l = [i for i in range(len(text)) if trie_in(t,text[i:])]
+    return l
     
-    for word in words:
-        insert_word(root,word)
-    return root
-  
-fname = 'C:/Users/ngaude/Downloads/dataset_294_4.txt'
-#fname = 'C:/Users/ngaude/Downloads/TrieConstruction.txt'
+    
+assert trie_matching('AATCGGGTTCAATCGGGGT','ATCG','GGGT') == [1,4,11,15]  
+   
+######################
+fname = 'C:/Users/ngaude/Downloads/dataset_294_8.txt'
 with open(fname, "r") as f:
-    words = f.read().splitlines()
-t = make_trie(*words)
-s = dump_trie(t)
-with open(fname+'.out', "w") as f:
-    f.write(s)
+    l = f.read().splitlines()
+    text = l[0]
+    words = l[1:]
+l = trie_matching(text,*words)
+print ' '.join(map(str,l))
+  
+#fname = 'C:/Users/ngaude/Downloads/dataset_294_4.txt'
+#with open(fname, "r") as f:
+#    words = f.read().splitlines()
+#t = make_trie(*words)
+#s = trie_tostr(t)
+#with open(fname+'.out', "w") as f:
+#    f.write(s)
+  
+

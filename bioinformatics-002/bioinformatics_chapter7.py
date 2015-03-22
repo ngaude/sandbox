@@ -5,7 +5,71 @@ Created on Sat Jan 17 13:42:39 2015
 @author: ngaude
 """
 
-_end = '_end_'
+_end = '$'
+
+def suffix_trie(text):
+    root = dict()
+    for i in range(len(text)):
+        word = text[i:]
+        current_dict = root
+        for letter in word:
+            if letter == _end:
+                value = i
+            else:
+                value = {}
+            current_dict = current_dict.setdefault(letter, value)
+#        current_dict = current_dict.setdefault(_end, i)
+    return root
+
+def suffix_tree(text):
+    """
+    CODE CHALLENGE: Solve the Suffix Tree Construction Problem.
+    Input: A string Text.
+    Output: The edge labels of SuffixTree(Text). You may return these strings in any order.
+    """
+    root = suffix_trie(text)
+    
+    def find_nonbranching_path(label,current_dict):
+        while (type(current_dict) == dict) and (len(current_dict.keys())==1):
+            letter = current_dict.keys()[0]
+            label += letter
+            if (letter == _end):
+                return (label,current_dict[letter])
+                break
+            current_dict = current_dict[letter]
+        return (label,current_dict)
+    
+    def factor_nonbranching_path(current_dict):
+        if type(current_dict) != dict:
+            return
+        labels = current_dict.keys()
+        for label in labels:
+            l,d = find_nonbranching_path(label,current_dict[label])
+            current_dict.pop(label)
+            current_dict[l] = d
+            factor_nonbranching_path(d)
+        return
+
+    factor_nonbranching_path(root)
+    return root
+
+def suffix_tree_edges(current_dict):
+    s = []
+    if type(current_dict) != dict:
+        return s
+    for label,child_dict in current_dict.iteritems():
+        s.append(label)
+        s += suffix_tree_edges(child_dict)
+    return s
+    
+    
+    
+text = 'CCAATAATTTACCGAACGGCTGCACTGGAAGTTCTAGTCGGACAAAAGGTAGGGCCACATTGACCATAATCGTCGCTTTGTACAGTCAAGACAGAGTATTGCAGATCACTGGTCATGAAATCCCGGAAACTGCAAGACTCCTCTAGTGTTTATCATTGCCTGTACGCTAATCGAGCGCGATAACTTGTCACTCTCCGATGCTTTCAGGACAGACAATCCTCTTCGCCCGCTCGTATTCACCCCAACCAAAACCCTGACTATGCGGGGCACTCCTACAACGAGAGGGCGTGTAAATACTTTTCGACACAACTGCTCTTCTCCCTCAACGTGGGTTGATGACGTTAAGGCCGGCATGTGTTACTAACCAGACGGGAGAATATCTTAAGTCCTCAACCGTCGAGTTTCTGGAACTGCAAGATGTTAGCAAGGCTACAGGAACGCAACAGGTCCTAGGTATACTCTTAATTGAACTGACAAAGTTTAAGGGCGAGACGCTCCGTATGTCCTACGGTAGGACTTAGCCGTAGCCCATTAGTGTCTCTCCACGCGGTATTGACAAGGGACCAGGAAATCTGCCGCCGTGTACCATGACACGCCCAAACTGTCCCGTGGTGTTCAGTCAAAGACATAATGGCACGTATACAAATTTCAACCAATATGACTACAAGAGCCGCGGACACAAGGAAAAAAGCCTACAAAGCTGTAGTCGGACGATTCCGTTTAACGCTCGTCGGTGCCACCCCGAGAGCGCTGCCCCCTGTTTATGGCGGCACAAGGCAAGGGGTTGCATGTCTGCTTGCCGTCTTCGAAGTTCAACGGTAGATATCCTCTAAACACATCAGCTCCTGTCAACCTATTCACATCCTCTTATAATCCACCTATCTGCCTTCAGAGTCCCCCTGGTGCACCTACGCGATGCCGCTGTGAATTACGACCTCGGCGAATCGCAGGGAACTCGAGAATTTTTATCCGTGAGTTGTATGGTGTTGGTTTCCTCCAACGGTGTCCCGGAATCGTTTGCGCACACGGGGCCCTGGTATGCGGTATTAAACCCGCGAGTCTAAAACGCTTGACTCCTTTAGGTGACTTTCGTACATCACTTGCGGTCCAGAGTGCAAGGCATATCTCGATGTGCCGCAGCCTGCGCTCTAATAGCCATCTATTCGTTAGCCAGCTCGCTGAATCCTCTCTTTTTTGTCGATATATTAGAGAGGAAGTACGGTAAACTCGGCTCCGGGTGTGGGATAGGGTAAGTACGAACTGCGAAATTTATTTTGTTCGCACAGTGATTAGTCTAGAGATTAGCCATTATTTTGTCGTTGCGCCTACGCCGAAATATGATTCTCCGTTTTCCCGCAGCACGCTGACGTTAAAATTGCCAAAACAGATGACGGTAACCCGAAACCAAGGGCCCAGGAGATCCGCTTGCGACCATTACAA$'
+#text = 'ATAAATG$'
+aa = suffix_trie(text)
+bb = suffix_tree(text)
+
+ee = suffix_tree_edges(bb)
 
 def make_trie(*words):
     """
@@ -47,7 +111,7 @@ def trie_tostr(root):
     def dump_leaf(curr,parent_id):
         current_id = parent_id + 1
         for key, value in curr.iteritems():
-            if (value == _end) or (value == _end):
+            if (value == _end):
                 continue
             s.append(str(parent_id)+'->'+str(current_id)+':'+key)
             current_id = dump_leaf(value,current_id)
@@ -69,13 +133,23 @@ def trie_matching(text,*words):
 assert trie_matching('AATCGGGTTCAATCGGGGT','ATCG','GGGT') == [1,4,11,15]  
    
 ######################
-fname = 'C:/Users/ngaude/Downloads/dataset_294_8.txt'
+
+fname = 'C:/Users/ngaude/Downloads/dataset_296_4.txt'
 with open(fname, "r") as f:
     l = f.read().splitlines()
     text = l[0]
-    words = l[1:]
-l = trie_matching(text,*words)
-print ' '.join(map(str,l))
+t = suffix_tree(text)
+e = suffix_tree_edges(t)
+with open(fname+'.out', "w") as f:
+    f.write('\n'.join(e))
+
+#fname = 'C:/Users/ngaude/Downloads/dataset_294_8.txt'
+#with open(fname, "r") as f:
+#    l = f.read().splitlines()
+#    text = l[0]
+#    words = l[1:]
+#l = trie_matching(text,*words)
+#print ' '.join(map(str,l))
   
 #fname = 'C:/Users/ngaude/Downloads/dataset_294_4.txt'
 #with open(fname, "r") as f:
@@ -84,5 +158,3 @@ print ' '.join(map(str,l))
 #s = trie_tostr(t)
 #with open(fname+'.out', "w") as f:
 #    f.write(s)
-  
-

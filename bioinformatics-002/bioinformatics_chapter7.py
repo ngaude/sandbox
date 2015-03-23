@@ -238,7 +238,8 @@ def color_suffix_tree(root):
     dfs(root)
     return tree_color
 
-def tree_color(edge_lines,node_lines):
+
+def tree_coloring(edge_lines,node_lines):
     """
     Tree Coloring Problem: Color the internal nodes of a tree given the colors of its leaves.
     Input: An adjacency list, followed by color labels for leaf nodes.
@@ -250,18 +251,27 @@ def tree_color(edge_lines,node_lines):
     5 -> 3,2
     6 -> {}
     7 -> 4,5,6
-    Input: Color labels for all nodes, in any order.
+    -
     0: red
     1: red
     3: blue
     4: blue
     6: red    
+    Output : Color labels for all nodes, in any order.
+    0: red
+    1: red
+    2: red
+    3: blue
+    4: blue
+    5: purple
+    6: red
+    7: purple    
     """
     tree_adjlist = [None]*(len(edge_lines))
     tree_color = {}
     for l in edge_lines:
         # parse edge parent node
-        spl = l.strip.split(' -> ')
+        spl = l.strip().split(' -> ')
         parent_id = int(spl[0])
         if spl[1] != '{}':
             # (let leaves None as initialized)
@@ -270,7 +280,7 @@ def tree_color(edge_lines,node_lines):
             tree_adjlist[parent_id] = children_ids
     for l in node_lines:
         # parse node id
-        spl = l.strip.split(': ')
+        spl = l.strip().split(': ')
         node_id = int(spl[0])
         if spl[1] == 'red':
             tree_color[node_id] = 1
@@ -303,10 +313,7 @@ def tree_color(edge_lines,node_lines):
             print 'weird color value (',str(c),') here, shall not happen'
             
     color_list = sorted([colored_node_tostr(k,v) for k,v in tree_color.iteritems()])
-    return '\n'.join(color_list)
-    
-    
-        
+    return '\n'.join(color_list)   
             
         
         
@@ -357,11 +364,15 @@ assert longest_repeat(text) == 'TTTCCATATACGGGACAAGGGTGAGCATTTCCGGGCTTGGATAGGGGC
 #with open(fname+'.out', "w") as f:
 #    f.write('\n'.join(e))
 
-fname = 'C:/Users/ngaude/Downloads/dataset_294_4.txt'
+fname = 'C:/Users/ngaude/Downloads/dataset_9665_6.txt'
 with open(fname, "r") as f:
-    words = f.read().splitlines()
-t = make_trie(*words)
-s = trie_tostr(t)
+    l = f.read().splitlines()
+    i = l.index('-')
+    edge_lines = l[:i]
+    node_lines = l[i+1:]
+s = tree_coloring(edge_lines,node_lines)
+print edge_lines
+print node_lines
 with open(fname+'.out', "w") as f:
     f.write(s)
 

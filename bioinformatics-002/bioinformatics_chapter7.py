@@ -303,35 +303,55 @@ def longest_shared_substring(text1,text2):
     Input: Strings Text1 and Text2.
     Output: The longest substring that occurs in both Text1 and Text2.
     """
+    
     def color_suffix_tree(root):
         # return a flat dictionnary where key is root's key and value is 
         # 1 for blue, 2 for red or 3=1|2 for purple
-        tree_color = {}
-        def dfs(current_dict):
+        tree_color = {}   
+        s = []
+        def dfs_edges(current_dict):
+            if type(current_dict) != dict:
+                return
+            for key,child_dict in current_dict.iteritems():
+                s.append((key,child_dict))
+                dfs_edges(child_dict)
+            return
+        dfs_edges(root)
+        
+        # color red and blue all leaves
+        keys,dicts = zip(*s)
+        colors = [None]*len(dicts)
+        
+        for i,(k,d) in enumerate(s):
+            label = text[k[0]:k[1]]
+            if label[-1] == '$':
+                if '#' in label:
+                    colors[i] = 1
+                else:
+                    colors[i] = 2
+                    
+        print 'colors',colors
+                
+        def dfs_color(current_dict):
+            if type(current_dict) != dict:
+                return 0                
+                
+            i = dicts.index(current_dict)
+            if colors[i] is not None:
+                return colors[i]
             color = 0
             for key,child_dict in current_dict.iteritems():
-                if key in tree_color.keys():
-                    color |= tree_color[key]
-                else:
-                    label = text[key[0]:key[1]]
-                    if label[-1] == '$':
-                        if '#' in label:
-                            color |= 1
-                            tree_color[key] = 1
-                        else:
-                            color |= 2
-                            tree_color[key] = 2
-                    else:
-                        tree_color[key] = dfs(child_dict)
-                        print '************* label *****',label
-                        if label == 'hello':
-                            print '---->',child_dict
-                            print '----------->for hello children are saying',tree_color[key]
-                        color |= tree_color[key]
-                label = text[key[0]:key[1]]
-                print '==>',label,': ',color, 'stored ?',(key in tree_color),'size ',len(tree_color.keys())
+                color |= dfs_color(child_dict)
+            colors[i] = color
             return color
-        dfs(root)
+
+#        dfs_color(root)
+        for d in dicts:
+            dfs_color(d)
+        print 'colors',colors
+        
+        print 'len(tree_color)',len(tree_color)
+        
         return tree_color     
 
     text = text1+'#'+text2+'$'
@@ -389,7 +409,7 @@ assert longest_repeat(text) == 'TTTCCATATACGGGACAAGGGTGAGCATTTCCGGGCTTGGATAGGGGC
 #assert longest_shared_substring('TCGGTAGATHELLOWORLDTGCGCCCACTC','AGGGGCTCGCAGTGTAHELLOWORLDAGAA') == 'HELLOWORLD'
 
 
-print new_suffix_tree_edges('pahelloanahelloworldma#bhelloanaworldhelloworldnas$')
+print '\n'.join(sorted(new_suffix_tree_edges('pahelloanahelloworldma#bhelloanaworldhelloworldnas$')))
 print '------------------'
 print longest_shared_substring('pahelloanahelloworldma','bhelloanaworldhelloworldnas')
 

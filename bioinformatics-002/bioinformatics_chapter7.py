@@ -218,25 +218,6 @@ def longest_repeat(text):
     dfs(t,'')
     return longests[-1]
 
-def color_suffix_tree(root):
-    # return a flat dictionnary where key is root's key and value is 
-    # 1 for blue, 2 for red or 3=1|2 for purple
-    tree_color = {}
-    def dfs(current_dict):
-        assert type(current_dict) == dict
-        color = 0
-        for label,child_dict in current_dict.iteritems():
-            if label == '$':
-                tree_color[label] = 1
-                color |= 1
-            elif label == '#':
-                tree_color[label] = 2
-                color |= 2
-            else:
-                color |= dfs(child_dict)
-        return color
-    dfs(root)
-    return tree_color
 
 
 def tree_coloring(edge_lines,node_lines):
@@ -314,8 +295,82 @@ def tree_coloring(edge_lines,node_lines):
             
     color_list = sorted([colored_node_tostr(k,v) for k,v in tree_color.iteritems()])
     return '\n'.join(color_list)   
+      
+
+def longest_shared_substring(text1,text2):
+    """
+    Longest Shared Substring Problem: Find the longest substring shared by two strings.
+    Input: Strings Text1 and Text2.
+    Output: The longest substring that occurs in both Text1 and Text2.
+    """
+    def color_suffix_tree(root):
+        # return a flat dictionnary where key is root's key and value is 
+        # 1 for blue, 2 for red or 3=1|2 for purple
+        tree_color = {}
+        def dfs(current_dict):
+            color = 0
+            for key,child_dict in current_dict.iteritems():
+                if key in tree_color.keys():
+                    color |= tree_color[key]
+                else:
+                    label = text[key[0]:key[1]]
+                    if label[-1] == '$':
+                        if '#' in label:
+                            color |= 1
+                            tree_color[key] = 1
+                        else:
+                            color |= 2
+                            tree_color[key] = 2
+                    else:
+                        tree_color[key] = dfs(child_dict)
+                        print '************* label *****',label
+                        if label == 'hello':
+                            print '---->',child_dict
+                            print '----------->for hello children are saying',tree_color[key]
+                        color |= tree_color[key]
+                label = text[key[0]:key[1]]
+                print '==>',label,': ',color, 'stored ?',(key in tree_color),'size ',len(tree_color.keys())
+            return color
+        dfs(root)
+        return tree_color     
+
+    text = text1+'#'+text2+'$'
+    root = new_suffix_tree(text)
+    tree_color = color_suffix_tree(root)
+
+
+    print '>>> color tree---------------------------'    
+    for k,v in tree_color.iteritems():
+        print text[k[0]:k[1]],v
+    print '<<< color tree---------------------------'    
+
+    def dfs(current_dict,word):
+        if type(current_dict) != dict:
+            return
+        for key, value in current_dict.iteritems():
+            assert key in tree_color.keys()
+#            if key not in tree_color.keys():
+#                print 'key',key
+#                print 'tree_color.keys()',tree_color.keys()     
+            label = text[key[0]:key[1]]
+            if (label == 'hello'):
+                print 'first children are',value
+                print 'parent color is', tree_color[key]
+            candidate = word+label
+
+            if (tree_color[key] == 3):
+                print 'candidate',candidate
             
-        
+            if (tree_color[key] == 3) and (len(longests[-1]) < len(candidate)):
+                # purple and longer than any longest's
+                longests.append(candidate)
+                # try to find deeper a longer purple one
+                dfs(value,candidate)
+        return
+    longests = ['',]
+    dfs(root,'')
+    return longests[-1]
+    
         
 
 
@@ -329,6 +384,16 @@ assert longest_repeat('ATATCGTTTTATCGTT') == 'TATCGTT'
 
 text = 'AATTTCCGACTTGCATGACGAGTCAGCGTTCCATCTGATCGAGTCTCCGAAGAACAAATACCCCTACTCAGTTGTGAGCCCCTTTACCGTGAGGACAGGGTCCTTGATGTCGTCTCCTAATTTGCGTTGCGGCTCAACATGTTGTACATAGTGGGGCCAGCCCCAGGGATTTTGTAATTTCTACACTCCATATACGGGACAAGGGTGAGCATTTCCGGGCTTGGATAGGGGCTGCAAGAAAATATCTGGACGTAAGAACTTAATGCCATTCCTACATCCTCGATACCTCGTCTGTCAGAGCAATGAGCTGGTTAGAGGACAGTATTGGTCGGTCATCCTCAGATTGGGGACACATCCGTCTCTATGTGCGTTCCGTTGCCTTGTGCTGACCTTGTCGAACGTACCCCATCTTCGAGCCGCACGCTCGACCAGCTAGGTCCCAGCAGTGGCCTGATAGAAAAATTACCTACGGGCCTCCCAATCGTCCTCCCAGGGTGTCGAACTCTCAAAATTCCCGCATGGTCGTGCTTCCGTACGAATTATGCAAACTCCAGAACCCGGATCTATTCCACGCTCAACGAGTCCTTCACGCTTGGTAGAATTTCATGCTCGTCTTTTGTATCCGTGTAAGTAGGAGGCCGCTGTACGGGTATCCCAGCCTTCGCGCTCTGCTGCAGGGACGTTAACACTCCGAACTTTCCATATACGGGACAAGGGTGAGCATTTCCGGGCTTGGATAGGGGCTGCAAGAAAATATCTGGACGTAAGAAGCTCTGAGGGATCCTCACGGAGTTAGATTTATTTTCCATATACGGGACAAGGGTGAGCATTTCCGGGCTTGGATAGGGGCTGCAAGAAAATATCTGGACGTAAGAAGAGTGATGTTTGGAATGCCAACTTCCATGCACGCCAATTGAGCAATCAGGAGAATCGAGTGCTGTTGACCTAGACCTTGTCAGAAGTATGAATTAACCGCGCGTGTAGGTTTGTCGCTCGACCTGCAAGGGTGCACAATCTGGACTGTCGTCGGCGAACGCTTTCATACGCCTACAAACCGCGTTGCTGGTCGAATCGATCTCACCACCGGCCTTGCAGGATTCTAATTATTCTCTCTCGGTGAGACTGCCGGCGGTCCATGGGTCTGTGTTTCGCTTCAAGCAGTGATATACTGGCGTTTTGTGACACATGGCCACGCACGCCTCTCGTTACTCCCAAT'
 assert longest_repeat(text) == 'TTTCCATATACGGGACAAGGGTGAGCATTTCCGGGCTTGGATAGGGGCTGCAAGAAAATATCTGGACGTAAGAAG'
+
+#assert longest_shared_substring('panama','bananas') == 'ana'
+#assert longest_shared_substring('TCGGTAGATHELLOWORLDTGCGCCCACTC','AGGGGCTCGCAGTGTAHELLOWORLDAGAA') == 'HELLOWORLD'
+
+
+print new_suffix_tree_edges('pahelloanahelloworldma#bhelloanaworldhelloworldnas$')
+print '------------------'
+print longest_shared_substring('pahelloanahelloworldma','bhelloanaworldhelloworldnas')
+
+text = 'pahelloanahelloworldma#bhelloanaworldhelloworldnas$'
 
 #######################
 
@@ -364,16 +429,21 @@ assert longest_repeat(text) == 'TTTCCATATACGGGACAAGGGTGAGCATTTCCGGGCTTGGATAGGGGC
 #with open(fname+'.out', "w") as f:
 #    f.write('\n'.join(e))
 
-fname = 'C:/Users/ngaude/Downloads/dataset_9665_6.txt'
-with open(fname, "r") as f:
-    l = f.read().splitlines()
-    i = l.index('-')
-    edge_lines = l[:i]
-    node_lines = l[i+1:]
-s = tree_coloring(edge_lines,node_lines)
-print edge_lines
-print node_lines
-with open(fname+'.out', "w") as f:
-    f.write(s)
+#fname = 'C:/Users/ngaude/Downloads/dataset_9665_6.txt'
+#with open(fname, "r") as f:
+#    l = f.read().splitlines()
+#    i = l.index('-')
+#    edge_lines = l[:i]
+#    node_lines = l[i+1:]
+#s = tree_coloring(edge_lines,node_lines)
+#with open(fname+'.out', "w") as f:
+#    f.write(s)
+
+#fname = 'C:/Users/ngaude/Downloads/dataset_296_6.txt'
+#with open(fname, "r") as f:
+#    l = f.read().splitlines()
+#    s = longest_shared_substring(*l)
+#with open(fname+'.out', "w") as f:
+#    f.write(s)
 
 

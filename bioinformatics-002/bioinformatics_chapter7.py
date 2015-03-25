@@ -378,6 +378,20 @@ def longest_shared_substring(text1,text2):
     
     return longests[-1]
 
+def naive_shortest_non_shared_substring(text1,text2):
+    """    
+    Shortest Non-Shared Substring Problem: Find the shortest substring of one string that does not appear in another string.
+    Input: Strings Text1 and Text2.
+    Output: The shortest substring of Text1 that does not appear in Text2.
+    """
+    shortests = [text1]
+    for i in range(len(text1)):
+        maxj = min(i+len(shortests[-1]),len(text1))
+        for j in range(i,maxj):
+            if text1[i:j] not in text2:
+                shortests.append(text1[i:j])
+                break
+    return shortests[-1]
 
 assert trie_matching('AATCGGGTTCAATCGGGGT','ATCG','GGGT') == [1,4,11,15]
 
@@ -387,6 +401,9 @@ assert sorted(new_suffix_tree_edges('anana$')) == ['$', '$', '$', '$', 'a', 'na'
 assert longest_repeat('ATATCGTTTTATCGTT') == 'TATCGTT'
 assert longest_shared_substring('panama','bananas') == 'ana'
 assert longest_shared_substring('pahelloanahelloworldma','bhelloanaworldhelloworldnas') == 'helloworld'
+
+assert len(naive_shortest_non_shared_substring('CCAAGCTGCTAGAGG','CATGCTGGGCTGGCT')) == 2
+
 
 #######################
 
@@ -432,11 +449,14 @@ assert longest_shared_substring('pahelloanahelloworldma','bhelloanaworldhellowor
 #with open(fname+'.out', "w") as f:
 #    f.write(s)
 
-fname = 'C:/Users/ngaude/Downloads/dataset_296_6.txt'
-with open(fname, "r") as f:
-    l = f.read().splitlines()
-    s = longest_shared_substring(*l)
-with open(fname+'.out', "w") as f:
-    f.write(s)
+#fname = 'C:/Users/ngaude/Downloads/dataset_296_6.txt'
+#with open(fname, "r") as f:
+#    l = f.read().splitlines()
+#    s = longest_shared_substring(*l)
+#with open(fname+'.out', "w") as f:
+#    f.write(s)
 
+#text1 = 'AAAATAAACAAAGAATTAATCAATGAACTAACCAACGAAGTAAGCAAGGATATACATAGATTTATTCATTGATCTATCCATCGATGTATGCATGGACACAGACTTACTCACTGACCTACCCACCGACGTACGCACGGAGAGTTAGTCAGTGAGCTAGCCAGCGAGGTAGGCAGGGTTTTCTTTGTTCCTTCGTTGCTTGGTCTCTGTCCCTCCGTCGCTCGGTGTGCCTGCGTGGCTGGGCCCCGCCGGCGCGGGGAAACATGGCACTCCCTACTTCGGTTTTCCAGTGCCAGGAACGCAGTGGAGGTCCAAATCGGCTGTATTGACAAGATAGCCCGTATTCGAGCGGCTTACGGCGCCCGCCTGAGGGATCCAGCCCTGCCGTAGTTTACAAACACTCGCTCAAAAGTGGATTATAGTATCACTGCCAAGACAACCCACTAGCTGACACAGCTGATATCCTCCCATCGTGGAAGTACTCTACATTATCAGCCAGATGACACTGGCAGGCGGTTAGATATGCGCCTGTGGAACTGCTCGAGGGGATACTTCTTTTACTCCTCACAACAATCGCCGTGCCAGTGCAAAGATGGCACGCCGATAGGCGGCAAGGCGAGGTCAGATCCAGAATGCACGCGAGAGCTCCCGTAGAACACGAG'
+#text2 = 'AAAATAAACAAAGAATTAATCAATGAACTAACCAACGAAGTAAGCAAGGATATACATAGATTTATTCATTGATCTATCCATCGATGTATGCATGGACACAGACTTACTCACTGACCTACCCACCGACGTACGCACGGAGAGTTAGTCAGTGAGCTAGCCAGCGAGGTAGGCAGGGTTTTCTTTGTTCCTTCGTTGCTTGGTCTCTGTCCCTCCGTCGCTCGGTGTGCCTGCGTGGCTGGGCCCCGCCGGCGCGGGGAAA'
+#print naive_shortest_non_shared_substring(text1,text2)
 

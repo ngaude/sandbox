@@ -13,12 +13,14 @@ def suffix_array(s):
     """
     return sorted(range(len(s)), key=lambda i: s[i:])
 
-s= 'AACGATAGCGGTAGA$'
-print ', '.join(map(str,suffix_array(s)))
+assert suffix_array('AACGATAGCGGTAGA$') == [15, 14, 0, 1, 12, 6, 4, 2, 8, 13, 3, 7, 9, 10, 11, 5]
 
-fname = 'C:/Users/ngaude/Downloads/dataset_310_2.txt'
-with open(fname, "r") as f:
-    text = f.read().strip()
-s = ', '.join(map(str,suffix_array(text)))
-with open(fname+'.out', "w") as f:
-    f.write(s)
+
+########################
+#
+#fname = 'C:/Users/ngaude/Downloads/dataset_310_2.txt'
+#with open(fname, "r") as f:
+#    text = f.read().strip()
+#s = ', '.join(map(str,suffix_array(text)))
+#with open(fname+'.out', "w") as f:
+#    f.write(s)

@@ -43,7 +43,60 @@ def bwt(s):
 
 assert bwt('GCGTGCCTGGTCA$') == 'ACTGGCT$TGCGGC'
 
+def ibwt(s):
+    """
+    Inverse Burrows-Wheeler Transform Problem: 
+    Reconstruct a string from its Burrows-Wheeler transform.
+    Input: A string Transform (with a single "$" symbol).
+    Output: The string Text such that BWT(Text) = Transform.
+    """
+    l = len(s)
     
+    def char_rank(i):
+        d[s[i]] = d.get(s[i],0) + 1
+        return d[s[i]]
+    d = {}
+    # produce a list tuple (char,rank) for the last column
+    last_char_rank = [(s[i],char_rank(i),i) for i in range(l)]
+    d = {}
+    # produce the list tuple (char,rank) for the first column
+    first_char_rank = sorted(last_char_rank)
+        
+#    for i in range(l):
+#        r = str(first_char_rank[i])+('*'*(l-2))+str(last_char_rank[i])
+#        print r
+    
+    i = 0
+    decoded = ''
+    for j in range(l):
+        i = first_char_rank[i][2]
+        decoded += first_char_rank[i][0]
+    return decoded
+    
+   
+assert ibwt('ard$rcaaaabb') == 'abracadabra$'
+assert ibwt('TTCCTAACG$A') == 'TACATCACGT$'
+
+
+"""
+    BWMATCHING(FirstColumn, LastColumn, Pattern, LastToFirst)
+        top ← 0
+        bottom ← |LastColumn| − 1
+        while top ≤ bottom
+            if Pattern is nonempty
+                symbol ← last letter in Pattern
+                remove last letter from Pattern
+                if positions from top to bottom in LastColumn contain an occurrence of symbol
+                    topIndex ← first position of symbol among positions from top to bottom in LastColumn
+                    bottomIndex ← last position of symbol among positions from top to bottom in LastColumn
+                    top ← LastToFirst(topIndex)
+                    bottom ← LastToFirst(bottomIndex)
+                else
+                    return 0
+            else
+                return bottom − top + 1
+"""
+ 
 ########################
 
 #fname = 'C:/Users/ngaude/Downloads/dataset_310_2.txt'
@@ -87,5 +140,10 @@ assert bwt('GCGTGCCTGGTCA$') == 'ACTGGCT$TGCGGC'
 #        rep = 1
 #        seq = c
 #print maxrep,rlecount
-            
+
+#fname = 'C:/Users/ngaude/Downloads/dataset_299_10.txt'
+#with open(fname, "r") as f:
+#    text = f.read().strip()
+#with open(fname+'.out', "w") as f:
+#    f.write(ibwt(text))           
         

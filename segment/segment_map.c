@@ -2,38 +2,62 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include <math.h>
 
-static int parse_date(char *str){
-    struct tm tm;
-    strptime(str,"%Y-%m-%d %H:%M:%S", &tm);  
-    return mktime(&tm);
-}
+/*********************************/
+
+#define XMIN        600000
+#define XMAX        604000
+#define YMIN        2424000
+#define YMAX        2428000
+#define XYSTEP      200
+#define TSTEP       1800
+#define REPEAT      25
+
+/*********************************/
+
+#define XCOUNT (((XMAX)-(XMIN))/(XYSTEP))
+#define YCOUNT (((YMAX)-(YMIN))/(XYSTEP))
+#define TCOUNT ((24*3600)/(TSTEP))
+
+#define IDX(X) ((int)(((X)-XMIN)/XYSTEP))
+#define IDY(Y) ((int)(((Y)-YMIN)/XYSTEP))
+#define IDT(T) ((int)(((T)-day_start)/TSTEP))
 
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+
+/*********************************/
 
 typedef struct segment {
     float x;
     float y;
     float r;
-    int t;
+    time_t t;
     float nx;
     float ny;
     float nr;
-    int nt;
+    time_t nt;
 } segment;
 
+time_t day_start;
+float presence[XCOUNT][YCOUNT][TCOUNT];
 
-float presence[20][20][48];
-int xmin = 600000;
-int xmax = 604000;
-int ymin = 2424000;
-int ymax = 2428000;
-int step = 200;
-int xcount = 20;
-int ycount = 20;
-int tcount = 48;
+/*********************************/
+
+static int parse_date(char *str){
+    struct tm tm;
+    strptime(str,"%Y-%m-%d %H:%M:%S", &tm);
+    return timegm(&tm);
+}
+
+static const char * timetodate(time_t t){
+    static char date[64];
+    struct tm *tm = gmtime(&t);
+    strftime(date, 64,"%Y-%m-%d %H:%M:%S",tm);
+    return (const char *)&date;
+}
 
 static float norm(segment *seg){
     float x2 = (seg->x - seg->nx)*(seg->x - seg->nx);
@@ -56,13 +80,6 @@ static void circle_random(float x,float y,float r,float *ptrx,float *ptry){
 }
 
 
-
-static void test_uniform(){
-    int i;
-    for (i=0;i<100;i++)
-        printf("uniform value [15,30] = %f\n",uniform_random(15,30));
-    return; 
-}
 
 static void parse_line(char *line,unsigned int len,segment *s,float *scaling)
 {
@@ -129,11 +146,11 @@ static void parse_line(char *line,unsigned int len,segment *s,float *scaling)
     }
 }
 
-static void init_presence(void){
+static void zero_presence(void){
     int i,j,t;
-    for (i=0;i<xcount;i++)
-        for (j=0;j<ycount;j++)
-            for (t=0;t<tcount;t++)
+    for (i=0;i<XCOUNT;i++)
+        for (j=0;j<YCOUNT;j++)
+            for (t=0;t<TCOUNT;t++)
                 presence[i][j][t] = 0.f;
     return;
 }
@@ -234,6 +251,94 @@ static int randsample_static_position(segment *seg,float *ptrx,float *ptry){
     return 2;
 }
 
+
+static void interpolate(segment *seg,int now,float *x,float *y){
+    segment static_seg;
+    if ((now < seg->t) || (now >=seg->nt))
+        return;
+    // compute percentage
+    float p = (now - seg->t)*1.0f/(seg->nt-seg->t);
+
+    // for a circle_to_cirle intersection 
+    // leading to a static position insight
+    // allow :
+    // - a static drift speed of 1m.s-1
+    // - a random walking with maximum displacement ~ sqrt(time)
+    // - never exceeding twice the original cell radius
+    static_seg = *seg;
+    static_seg.r = MIN(seg->r + sqrt(now-seg->t)*1., 2. * seg->r);
+    static_seg.nr = MIN(seg->nr + sqrt(now)*1., 2 * 2. * seg->nr);
+    int ret = randsample_static_position(&static_seg,x,y);
+    if (ret == 0){
+        randsample_moving_position(seg,p,x,y);
+    }
+    return;
+}
+
+static void parse_file(char *filename){
+    FILE * fp;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    char buff[64];
+    const char * date;
+
+    fp = fopen(filename, "r");
+    if (fp == NULL)
+        exit(EXIT_FAILURE);
+
+    char *c = filename;
+    while (*c++!='.' ){}
+    memcpy(buff,c-11,10);
+    memcpy(buff+10," 05:00:00",9);
+    buff[19]='\0';
+    printf("day start = <%s>\n",buff);
+    time_t day_start = parse_date(buff);
+
+    while ((read = getline(&line, &len, fp)) != -1) 
+    {
+        segment seg;
+        float scaling = 1.;
+        parse_line(line,len,&seg,&scaling);
+//        printf(">>> %f,%f,%f,%f,%f,%f,%f\n",seg.x,seg.y,seg.r,seg.nx,seg.ny,seg.nr,scaling);
+//        printf(">>> %s\n",timetodate(seg.t));
+//        printf(">>> %s\n",timetodate(seg.nt));
+        time_t t_start,t;
+        t_start = day_start + (seg.t - day_start + TSTEP - 1)/TSTEP*TSTEP;
+
+        int rep;
+        int ix,iy,it;
+
+        for (t = t_start;t < seg.nt;t+=TSTEP)
+        {
+            it = IDT(t);
+
+            if ((it>=TCOUNT) || (it<0))
+                continue;
+            date = timetodate(day_start);
+            for(rep=0;rep<REPEAT;rep++)
+            {
+                float x=0,y=0;
+                interpolate(&seg,t,&x,&y);
+                ix = IDX(x);
+                iy = IDY(y);
+
+//                printf("<<< %f|%f|%s %d,%d,%d\n",x,y,date,ix,iy,it);
+                if ((ix<XCOUNT) && (ix>=0) && (iy<YCOUNT) && (iy>=0))
+                {
+                    presence[ix][iy][it] += scaling/REPEAT;
+                }
+            }
+        }
+    }
+
+    fclose(fp);
+    if (line)
+        free(line);
+    return;
+}
+
+#if 0
 static void test_intersection(void){
     segment is,os;
 
@@ -245,7 +350,7 @@ static void test_intersection(void){
     is.nr = 2;
     intersect_points(&is,&os);
     printf("Intersection:(%f,%f) (%f,%f)\n",os.x,os.y,os.nx,os.ny); 
- 
+
     is.x = 0;
     is.y = 0;
     is.nx = 4;
@@ -273,71 +378,48 @@ static void test_intersection(void){
     return;
 }
 
-static void interpolate(segment *seg,int now){
-    if ((now < seg->t) || (now >=seg->nt))
-        return;
-    // compute percentage
-    float p = (now - seg->t)*1.0f/(seg->nt-seg->t);
-
-    // for a circle_to_cirle intersection 
-    // leading to a static position insight
-    // allow :
-    // - a static drift speed of 1m.s-1
-    // - a random walking with maximum displacement ~ sqrt(time)
-    // - never exceeding twice the original cell radius
-    float ra = MIN(seg->r + sqrt(now-seg->t)*1., 2. * seg->r);
-    float rb = MIN(seg->nr + sqrt(now)*1., 2 * 2. * seg->nr);
-    float x,y;
-    int ret = randsample_static_position(seg,&x,&y);
-    if (ret == 0){
-        randsample_moving_position(seg,p,&x,&y);
-    }
-    return;
+static void test_uniform(){
+    int i;
+    for (i=0;i<100;i++)
+        printf("uniform value [15,30] = %f\n",uniform_random(15,30));
+    return; 
 }
 
+static void test_date(){
+    char *date = "2014-12-14 03:00:00";
+    const char *pdate = NULL;
+    time_t t = parse_date(date);
+    pdate = timetodate(t);
+    printf("%s == %s\n",date,pdate);
+}
+#endif
 
-
-static void parse_file(char *filename){
-    FILE * fp;
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    fp = fopen(filename, "r");
-    if (fp == NULL)
-        exit(EXIT_FAILURE);
-
-    while ((read = getline(&line, &len, fp)) != -1) {
-        segment seg;
-        float scaling;
-        parse_line(line,len,&seg,&scaling);
-
-        int rep,hour;
-        char date[64];
-        for (hour=4;hour<23;hour++){
-            sprintf(date,"2014-05-19 %02d:00:00",hour);
-            int now = parse_date(date);
-            for(rep=0;rep<25;rep++)
-            {
-                interpolate(&seg,now);
-            }
-        }
-        //printf("==> %f,%f,%f,%d,%f,%f,%f,%d,%f\n",seg.x,seg.y,seg.r,seg.t,seg.nx,seg.ny,seg.nr,seg.nt,scaling);
+void test_presence(){
+    float minv =  1000000000;
+    float maxv = -1000000000;
+    float avgv = 0;
+    int x,y,t;
+    for (x=0;x<XCOUNT;x++)
+        for (y=0;y<YCOUNT;y++)
+            for (t=0;t<TCOUNT;t++)
+    {
+        minv = MIN(minv,presence[x][y][t]);
+        maxv = MAX(maxv,presence[x][y][t]);
+        avgv += presence[x][y][t];
     }
-
-    fclose(fp);
-    if (line)
-        free(line);
-    exit(EXIT_SUCCESS);
-
+    avgv /= XCOUNT*YCOUNT*TCOUNT;
+    printf("stat presence min=%f, max=%f, average=%f\n",minv,maxv,avgv);
 }
 
 int main(int argc,char *argv[])
 {
-    init_presence();
-//    test_intersection();
-//    test_uniform();
+    //test_date();
+    //test_intersection();
+    //test_uniform();
+
+    zero_presence();
     parse_file("/home/ngaude/workspace/data/arzephir_italy_place_segment_2014-05-19.tsv");
+    test_presence();
     return 0;
 }
 

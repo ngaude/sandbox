@@ -57,6 +57,8 @@ def plot_presence(d):
 
 vmax = max(df.value)*0.9
 
+# plot_presence("1975-11-15 19:30:00")
+
 for d in sorted(set(df.dat_heur)):
     if d[11:] != '04:30:00':
         save_presence(d)

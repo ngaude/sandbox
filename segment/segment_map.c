@@ -7,6 +7,7 @@
 
 /*********************************/
 
+#if 0
 #define XMIN        600000
 #define XMAX        604000
 #define YMIN        2424000
@@ -14,7 +15,20 @@
 #define XYSTEP      200
 #define TSTEP       1800
 #define REPEAT      25
+#define WALK_SPEED  1.f
 #define CNIL_THRESHOLD  100
+#else
+#define XMIN        0
+#define XMAX        2000
+#define YMIN        0
+#define YMAX        2000
+#define XYSTEP      50
+#define TSTEP       3600
+#define REPEAT      250000
+#define WALK_SPEED  0.f
+#define CNIL_THRESHOLD  0
+
+#endif
 
 /*********************************/
 
@@ -50,6 +64,7 @@ float presence[XCOUNT][YCOUNT][TCOUNT];
 static int parse_date(char *str){
     struct tm tm;
     strptime(str,"%Y-%m-%d %H:%M:%S", &tm);
+    //printf("[%s=%d]\n",str,(int)timegm(&tm));
     return timegm(&tm);
 }
 
@@ -57,6 +72,7 @@ static const char * timetodate(time_t t){
     static char date[64];
     struct tm *tm = gmtime(&t);
     strftime(date, 64,"%Y-%m-%d %H:%M:%S",tm);
+    //printf("[%s=%d]\n",date,(int)t);
     return (const char *)&date;
 }
 
@@ -85,10 +101,10 @@ static void circle_random(float x,float y,float r,float *ptrx,float *ptry){
 static void parse_line(char *line,unsigned int len,segment *s,float *scaling)
 {
     char *param=line,*ptr=line;
-    char *eol = line + len;
+    char *eol = &line[len];
     int column_id = 0;
     // scan line until end of line
-    while (ptr <= eol){
+    while ((ptr <= eol)){
         // check for a parameter delimiter
         if ((*ptr == '\t') || (*ptr == '\n') || (*ptr == '\0'))
         {
@@ -138,13 +154,23 @@ static void parse_line(char *line,unsigned int len,segment *s,float *scaling)
                 case 11:
                     // scaling
                     *scaling = atof(param);
+                    
+                    /* last parameter */
+                    return;
                     break;
+            }
+            if ((*ptr == '\n') || (*ptr == '\0'))
+
+            {
+                // end of line
+                return;
             }
             column_id++;
             param = ptr+1;
         }
         ptr++;
     }
+    exit(0);
 }
 
 static void zero_presence(void){
@@ -267,8 +293,8 @@ static void interpolate(segment *seg,int now,float *x,float *y){
     // - a random walking with maximum displacement ~ sqrt(time)
     // - never exceeding twice the original cell radius
     static_seg = *seg;
-    static_seg.r = MIN(seg->r + sqrt(now-seg->t)*1., 2. * seg->r);
-    static_seg.nr = MIN(seg->nr + sqrt(now)*1., 2 * 2. * seg->nr);
+    static_seg.r = MIN(seg->r + sqrt(now-seg->t)*WALK_SPEED, 2. * seg->r);
+    static_seg.nr = MIN(seg->nr + sqrt(now)*WALK_SPEED, 2 * 2. * seg->nr);
     int ret = randsample_static_position(&static_seg,x,y);
     if (ret == 0){
         randsample_moving_position(seg,p,x,y);
@@ -295,16 +321,20 @@ static void parse_file(char *filename){
     printf("day start s = <%s>\n",buff);
     day_start = parse_date(buff);
 
+    read = getline(&line, &len, fp);
+
     while ((read = getline(&line, &len, fp)) != -1) 
     {
         segment seg;
         float scaling = 1.;
         parse_line(line,len,&seg,&scaling);
-//        printf(">>> %f,%f,%f,%f,%f,%f,%f\n",seg.x,seg.y,seg.r,seg.nx,seg.ny,seg.nr,scaling);
-//        printf(">>> %s\n",timetodate(seg.t));
-//        printf(">>> %s\n",timetodate(seg.nt));
         time_t t_start,t;
         t_start = day_start + (seg.t - day_start + TSTEP - 1)/TSTEP*TSTEP;
+
+//        printf("| %f,%f,%f,%f,%f,%f,%f\n",seg.x,seg.y,seg.r,seg.nx,seg.ny,seg.nr,scaling);
+//        printf("| %d,%s\n",(int)seg.t,timetodate(seg.t));
+//        printf("| %d,%s\n",(int)seg.nt,timetodate(seg.nt));
+//        printf("| %d,%s\n",(int)t_start,timetodate(t_start));
 
         int rep;
         int ix,iy,it;
@@ -312,6 +342,7 @@ static void parse_file(char *filename){
         for (t = t_start;t < seg.nt;t+=TSTEP)
         {
             it = IDT(t);
+//            printf("%d<%d<%d\n",(int)t_start,(int)t,(int)seg.nt);
 
             if ((it>=TCOUNT) || (it<0))
                 continue;
@@ -321,12 +352,13 @@ static void parse_file(char *filename){
                 interpolate(&seg,t,&x,&y);
                 ix = IDX(x);
                 iy = IDY(y);
-//                const char * date = 0;
-//                date = timetodate(day_start);
+                const char * date = 0;
+                date = timetodate(t);
 //                printf("<<< %f|%f|%s %d,%d,%d\n",x,y,date,ix,iy,it);
                 if ((ix<XCOUNT) && (ix>=0) && (iy<YCOUNT) && (iy>=0))
                 {
-                    presence[ix][iy][it] += scaling/REPEAT;
+//                  printf("%f/%d = %f\n",scaling,REPEAT,1.*scaling/(1.*REPEAT));
+                    presence[ix][iy][it] += 1.*scaling/(1.*REPEAT);
                 }
             }
         }
@@ -385,6 +417,7 @@ static void test_uniform(){
     return; 
 }
 
+#endif
 static void test_date(){
     char *date = "2014-12-14 03:00:00";
     const char *pdate = NULL;
@@ -392,7 +425,6 @@ static void test_date(){
     pdate = timetodate(t);
     printf("%s == %s\n",date,pdate);
 }
-#endif
 
 static void dump_presence(char *filename){
     FILE * fp;
@@ -465,13 +497,14 @@ int main(int argc,char *argv[])
     if (argc >1)
         in_filename = argv[1];
     else 
-        in_filename = "/home/ngaude/workspace/data/arzephir_italy_place_segment_2014-05-19.tsv";
+        in_filename = "static_test_1975-11-15.tsv";
 
     if (argc >2)
         out_filename = argv[2];
     else 
         out_filename = "presence.csv";
 
+  
     zero_presence();
     parse_file(in_filename);
     dump_presence(out_filename);

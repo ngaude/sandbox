@@ -11,9 +11,10 @@
 #define XMAX        604000
 #define YMIN        2424000
 #define YMAX        2428000
-#define XYSTEP      100
-#define TSTEP       600
+#define XYSTEP      200
+#define TSTEP       1800
 #define REPEAT      25
+#define CNIL_THRESHOLD  100
 
 /*********************************/
 
@@ -415,7 +416,7 @@ static void dump_presence(char *filename){
             {
                 x = ix*XYSTEP+XMIN;
                 value = presence[ix][iy][it];
-                if (value < 100)
+                if (value < CNIL_THRESHOLD)
                     value = 0;
                 fprintf(fp,"%s,%d,%d,%d,%d,%d\n",date,x,y,x+XYSTEP,y+XYSTEP,value);
             }

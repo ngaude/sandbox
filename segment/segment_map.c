@@ -11,8 +11,8 @@
 #define XMAX        604000
 #define YMIN        2424000
 #define YMAX        2428000
-#define XYSTEP      200
-#define TSTEP       1800
+#define XYSTEP      100
+#define TSTEP       600
 #define REPEAT      25
 
 /*********************************/
@@ -253,7 +253,7 @@ static int randsample_static_position(segment *seg,float *ptrx,float *ptry){
 
 
 static void interpolate(segment *seg,int now,float *x,float *y){
-    segment static_seg;
+    segment static_seg = {0,0,0,0,0,0,0,0};
     if ((now < seg->t) || (now >=seg->nt))
         return;
     // compute percentage
@@ -281,7 +281,6 @@ static void parse_file(char *filename){
     size_t len = 0;
     ssize_t read;
     char buff[64];
-    const char * date;
 
     fp = fopen(filename, "r");
     if (fp == NULL)
@@ -290,10 +289,10 @@ static void parse_file(char *filename){
     char *c = filename;
     while (*c++!='.' ){}
     memcpy(buff,c-11,10);
-    memcpy(buff+10," 05:00:00",9);
+    memcpy(buff+10," 04:30:00",9);
     buff[19]='\0';
-    printf("day start = <%s>\n",buff);
-    time_t day_start = parse_date(buff);
+    printf("day start s = <%s>\n",buff);
+    day_start = parse_date(buff);
 
     while ((read = getline(&line, &len, fp)) != -1) 
     {
@@ -315,14 +314,14 @@ static void parse_file(char *filename){
 
             if ((it>=TCOUNT) || (it<0))
                 continue;
-            date = timetodate(day_start);
             for(rep=0;rep<REPEAT;rep++)
             {
                 float x=0,y=0;
                 interpolate(&seg,t,&x,&y);
                 ix = IDX(x);
                 iy = IDY(y);
-
+//                const char * date = 0;
+//                date = timetodate(day_start);
 //                printf("<<< %f|%f|%s %d,%d,%d\n",x,y,date,ix,iy,it);
                 if ((ix<XCOUNT) && (ix>=0) && (iy<YCOUNT) && (iy>=0))
                 {
@@ -394,31 +393,87 @@ static void test_date(){
 }
 #endif
 
-void test_presence(){
-    float minv =  1000000000;
-    float maxv = -1000000000;
-    float avgv = 0;
-    int x,y,t;
-    for (x=0;x<XCOUNT;x++)
-        for (y=0;y<YCOUNT;y++)
-            for (t=0;t<TCOUNT;t++)
+static void dump_presence(char *filename){
+    FILE * fp;
+    const char * date = 0;
+
+    fp = fopen(filename, "a+");
+    if (fp == NULL)
+        exit(EXIT_FAILURE);
+
+    int ix,iy,it,x,y;
+    int value;
+    time_t t;
+    for (it=0;it<TCOUNT;it++)
     {
-        minv = MIN(minv,presence[x][y][t]);
-        maxv = MAX(maxv,presence[x][y][t]);
-        avgv += presence[x][y][t];
+        t = it*TSTEP + day_start;
+        date = timetodate(t);
+        for (iy=0;iy<YCOUNT;iy++)
+        {
+            y = iy*XYSTEP+YMIN;
+            for (ix=0;ix<XCOUNT;ix++)
+            {
+                x = ix*XYSTEP+XMIN;
+                value = presence[ix][iy][it];
+                if (value < 100)
+                    value = 0;
+                fprintf(fp,"%s,%d,%d,%d,%d,%d\n",date,x,y,x+XYSTEP,y+XYSTEP,value);
+            }
+        }
     }
-    avgv /= XCOUNT*YCOUNT*TCOUNT;
-    printf("stat presence min=%f, max=%f, average=%f\n",minv,maxv,avgv);
+    fclose(fp);
+    return;
+}
+
+void test_presence(){
+    float minv;
+    float maxv = -1000000000;
+    float sumv;
+    int ix,iy,it;
+    time_t t;
+    const char *date;
+    for (it=0;it<TCOUNT;it++)
+    {
+        sumv = 0;
+        minv =  1000000000;
+        maxv = -1000000000;
+        for (ix=0;ix<XCOUNT;ix++)
+        {
+            for (iy=0;iy<YCOUNT;iy++)
+            {
+                minv = MIN(minv,presence[ix][iy][it]);
+                maxv = MAX(maxv,presence[ix][iy][it]);
+                sumv += presence[ix][iy][it];
+            }
+        }
+        t = it*TSTEP + day_start;
+        date = timetodate(t);
+        printf("presence %s min=%f, max=%f, sum=%f\n",date,minv,maxv,sumv);
+    }
 }
 
 int main(int argc,char *argv[])
 {
+    char *in_filename = 0;
+    char *out_filename = 0;
+    //srandom(151175);
+    srandom(151);
     //test_date();
     //test_intersection();
     //test_uniform();
+    if (argc >1)
+        in_filename = argv[1];
+    else 
+        in_filename = "/home/ngaude/workspace/data/arzephir_italy_place_segment_2014-05-19.tsv";
+
+    if (argc >2)
+        out_filename = argv[2];
+    else 
+        out_filename = "presence.csv";
 
     zero_presence();
-    parse_file("/home/ngaude/workspace/data/arzephir_italy_place_segment_2014-05-19.tsv");
+    parse_file(in_filename);
+    dump_presence(out_filename);
     test_presence();
     return 0;
 }

@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import time,datetime
 import math
 
-df = pd.read_csv('presence.csv', names = ('dat_heur','xmin','ymin','xmax','ymax','value'))
 
 def epoch_sec(t):
     #t string datetime in a 'YYYY-mm-dd HH:MM:SS' format
@@ -57,7 +56,10 @@ def plot_presence(d):
 
 vmax = max(df.value)*0.9
 
-# plot_presence("1975-11-15 19:30:00")
+df = pd.read_csv('presence.csv', names = ('dat_heur','xmin','ymin','xmax','ymax','value'))
+d = "1975-11-15 19:30:00"
+m = np.array(df[df.dat_heur == d].value)
+plot_presence(d)
 
 for d in sorted(set(df.dat_heur)):
     if d[11:] != '04:30:00':

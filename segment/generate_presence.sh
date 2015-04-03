@@ -8,4 +8,4 @@ echo '>>> image'
 rm /home/ngaude/workspace/data/image/*.png
 python presence_imshow.py
 echo '>>> movie'
-mencoder mf:///home/ngaude/workspace/data/image/*.png -vf scale=1280:720 -mf fps=12:type=png -ovc lavc -lavcopts vcodec=mpeg4 -oac copy -o presence.avi
+mencoder mf:///home/ngaude/workspace/data/image/*.png -vf rotate=2 -mf fps=12:type=png -o presence.avi -ovc xvid -xvidencopts bitrate=4000 -oac copy

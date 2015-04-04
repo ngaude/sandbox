@@ -13,8 +13,8 @@
 #define YMIN        2424000
 #define YMAX        2428000
 #define XYSTEP      100
-#define TSTEP       1800
-#define REPEAT      100
+#define TSTEP       300
+#define REPEAT      20
 #define WALK_SPEED  1.f
 #define CNIL_THRESHOLD  100
 #else

@@ -27,8 +27,8 @@ def save_presence(t):
     ax = plt.Axes(fig, [0., 0., 1., 1.])
     ax.set_axis_off()
     fig.add_axes(ax)
-    ax.imshow(m,vmin=vmin,vmax=vmax,interpolation='bicubic')
-    fn = '/home/ngaude/workspace/data/image/presence_'+t+'.png'
+    ax.imshow(m,vmin=vmin,vmax=vmax,interpolation='bicubic',origin='lower')
+    fn = '/home/ngaude/workspace/data/image/presence_'+ts[t]+'.png'
     plt.savefig(fn,dpi = 720)
     plt.close()
 
@@ -42,8 +42,8 @@ Acceptable values are *None*, 'none', 'nearest', 'bilinear',
 
 def plot_presence(t):
     m = ms[t]
-    plt.figure(t)
-    plt.imshow(m,vmin=vmin,vmax=vmax,interpolation='bicubic')
+    plt.figure(ts[t])
+    plt.imshow(m,vmin=vmin,vmax=vmax,interpolation='bicubic',origin='lower')
     plt.show()
 
 df = pd.read_csv('presence.csv', names = ('dat_heur','xmin','ymin','xmax','ymax','value'))
@@ -61,17 +61,23 @@ for m in ms:
 bkg = ms.mean()
 
 # remove background map from presence maps
-ms = [m-bkg for m in ms]
-vmin = min([m.min() for m in ms])
-vmax = max([m.max() for m in ms])
+# ms = [m-bkg for m in ms]
+
+# normalize everything
+m_std = np.mean([m.std() for m in ms])
+m_mean = np.mean([m.mean() for m in ms])
+
+# fix the colormap range = 6-standart-deviation, around the mean
+vmax = m_mean + m_std * 3
+vmin = m_mean - m_std * 3
 
 if len(sys.argv)>1:
     try:
         t = int(sys.argv[1])
     except ValueError:
-        t = sys.argv[1]
+        t = ts.index(sys.argv[1])
     plot_presence(t)
 else:    
     for i,t in enumerate(ts):
         print 'image '+str(i)+'/'+str(len(ts))+':',t
-        save_presence(t)
+        save_presence(i)

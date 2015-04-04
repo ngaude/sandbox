@@ -77,26 +77,6 @@ def ibwt(s):
 assert ibwt('ard$rcaaaabb') == 'abracadabra$'
 assert ibwt('TTCCTAACG$A') == 'TACATCACGT$'
 
-
-"""
-    BWMATCHING(FirstColumn, LastColumn, Pattern, LastToFirst)
-        top ← 0
-        bottom ← |LastColumn| − 1
-        while top ≤ bottom
-            if Pattern is nonempty
-                symbol ← last letter in Pattern
-                remove last letter from Pattern
-                if positions from top to bottom in LastColumn contain an occurrence of symbol
-                    topIndex ← first position of symbol among positions from top to bottom in LastColumn
-                    bottomIndex ← last position of symbol among positions from top to bottom in LastColumn
-                    top ← LastToFirst(topIndex)
-                    bottom ← LastToFirst(bottomIndex)
-                else
-                    return 0
-            else
-                return bottom − top + 1
-"""
-
 def bwmatching(s,patterns):
     """
     CODE CHALLENGE: Implement BWMATCHING.
@@ -116,13 +96,6 @@ def bwmatching(s,patterns):
                     bottom_index = last_column.rfind(symbol,top,bottom+1)
                     top = last_to_first[top_index]
                     bottom = last_to_first[bottom_index]
-#                    print '-----------------------'
-#                    print 'pattern',pattern
-#                    print 'symbol',symbol
-#                    print 'top_index',top_index
-#                    print 'bottom_index',bottom_index                    
-#                    print 'top',top
-#                    print 'bottom',bottom
                 else:
                     return 0
             else:
@@ -146,10 +119,6 @@ def bwmatching(s,patterns):
 #        r = str(first_column[i])+('*'*(l-2))+str(last_column[i])
 #        rr = str(last_column[first_to_last[i]])+('*'*(l-2))+str(first_column[last_to_first[i]])
 #        assert rr == r
-#        print r   
-#    print '-'*l
-#    print 'first to last =',first_to_last
-#    print 'last to first =',last_to_first
     
     return [pattern_count(first_column,last_column,pattern,last_to_first) for pattern in patterns]
 
@@ -206,15 +175,11 @@ assert bwmatching('TCCTCTATGAGATCCTATTCTATGAAACCTTCA$GACCAAAATTCTCCGGC',['CCT', 
 #    text = f.read().strip()
 #with open(fname+'.out', "w") as f:
 #    f.write(ibwt(text))           
-<<<<<<< HEAD
 
-fname = 'C:/Users/ngaude/Downloads/dataset_300_8.txt'
-with open(fname, "r") as f:
-    text = f.read().strip().split('\n')
-    s = text[0]
-    p = text[1].split(' ')
-with open(fname+'.out', "w") as f:
-    f.write(' '.join(map(str,bwmatching(s,p))))
-=======
-        
->>>>>>> origin/master
+#fname = 'C:/Users/ngaude/Downloads/dataset_300_8.txt'
+#with open(fname, "r") as f:
+#    text = f.read().strip().split('\n')
+#    s = text[0]
+#    p = text[1].split(' ')
+#with open(fname+'.out', "w") as f:
+#    f.write(' '.join(map(str,bwmatching(s,p))))

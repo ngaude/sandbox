@@ -41,27 +41,25 @@ def save_presence(d):
 
 def plot_presence(d):
     m = np.array(df[df.dat_heur == d].value)
-    print m
+    print m[0]
     xaxis = sorted(set(df.xmin))
     yaxis = sorted(set(df.ymin))
     w = len(xaxis)
     h = len(yaxis)
     m.shape = (w,h)
     plt.figure(d)
-    #plt.axis([min(xaxis),max(xaxis),min(yaxis),max(yaxis)])
-    plt.imshow(m,vmin=0,vmax=vmax)
-    plt.contour(m)
+    plt.imshow(m)
     plt.show()
 
-
-vmax = max(df.value)*0.9
-
 df = pd.read_csv('presence.csv', names = ('dat_heur','xmin','ymin','xmax','ymax','value'))
-d = "1975-11-15 19:30:00"
-m = np.array(df[df.dat_heur == d].value)
-plot_presence(d)
+vmax = max(df.value)*0.9
 
 for d in sorted(set(df.dat_heur)):
     if d[11:] != '04:30:00':
         save_presence(d)
 
+"""
+d = "1975-11-15 22:30:00"
+m = np.array(df[df.dat_heur == d].value)
+plot_presence(d)
+"""

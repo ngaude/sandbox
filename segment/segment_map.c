@@ -7,7 +7,7 @@
 
 /*********************************/
 
-#if 0
+#if 1
 #define XMIN        600000
 #define XMAX        604000
 #define YMIN        2424000
@@ -24,8 +24,8 @@
 #define YMAX        2000
 #define XYSTEP      50
 #define TSTEP       3600
-#define REPEAT      250000
-#define WALK_SPEED  0.f
+#define REPEAT      100000
+#define WALK_SPEED  1.f
 #define CNIL_THRESHOLD  0
 
 #endif
@@ -89,14 +89,35 @@ static float uniform_random(float a,float b) {
 }
 
 static void circle_random(float x,float y,float r,float *ptrx,float *ptry){
+#if 0
     float angle = uniform_random(0,2*3.1415);
     float radius  = uniform_random(0.,r);
     *ptrx = x + radius*cos(angle);
     *ptry = y + radius*sin(angle);
     return;
+#else
+    int retry = 0;
+    segment seg;
+    seg.x = x;
+    seg.y = y;
+
+    while (retry++<25){
+        seg.nx = uniform_random(x-r,x+r);
+        seg.ny = uniform_random(y-r,y+r);
+        float d = norm(&seg);
+        if (d < r){
+            // x,y is in the intersection of 
+            // circle(seg->x,seg->y,seg->r) and circle(seg->nx,seg->ny,seg->nr)
+            *ptrx = seg.nx;
+            *ptry = seg.ny;
+            return;
+        }
+    }
+    *ptrx = x;
+    *ptry = y;
+    return;
+#endif
 }
-
-
 
 static void parse_line(char *line,unsigned int len,segment *s,float *scaling)
 {
@@ -211,8 +232,8 @@ static void randsample_moving_position(segment *seg,float p,float *ptrx,float *p
     float xa,ya,xb,yb;
     circle_random(seg->x,seg->y,seg->r,&xa,&ya);
     circle_random(seg->nx,seg->ny,seg->nr,&xb,&yb);
-    *ptrx = xa + (xa-xb)*p;
-    *ptry = ya + (ya-yb)*p;
+    *ptrx = xa + (xb-xa)*p;
+    *ptry = ya + (yb-ya)*p;
     return;
 }
 
@@ -229,7 +250,7 @@ static int randsample_static_position(segment *seg,float *ptrx,float *ptry){
         return 0;
     if (ret == 0){
         // one circle is fully inside the other, let's take the smallest one
-        if (seg->r <seg->nr){
+        if (seg->r < seg->nr){
             box[0] = seg->x - seg->r;
             box[1] = seg->x + seg->r;
             box[2] = seg->y - seg->r;
@@ -242,8 +263,8 @@ static int randsample_static_position(segment *seg,float *ptrx,float *ptry){
         }
     }else{
         // circle to circle intersection
-        float hx = iseg.x+iseg.nx;
-        float hy = iseg.y+iseg.ny;
+        float hx = (iseg.x+iseg.nx)/2;
+        float hy = (iseg.y+iseg.ny)/2;
         float d = norm(&iseg)/2.;
         box[0] = hx-d;
         box[1] = hx+d;
@@ -253,8 +274,8 @@ static int randsample_static_position(segment *seg,float *ptrx,float *ptry){
     int retry = 0;
     sega.x = seg->x;
     sega.y = seg->y;
-    segb.x = seg->x;
-    segb.y = seg->y;
+    segb.x = seg->nx;
+    segb.y = seg->ny;
 
     while (retry++<25){
         x = uniform_random(box[0],box[1]);
@@ -265,7 +286,7 @@ static int randsample_static_position(segment *seg,float *ptrx,float *ptry){
         segb.ny = y;
         float da = norm(&sega);
         float db = norm(&segb);
-        if ((da<seg->r) && (db<seg->nr)){
+        if ((da < seg->r) && (db < seg->nr)){
             // x,y is in the intersection of 
             // circle(seg->x,seg->y,seg->r) and circle(seg->nx,seg->ny,seg->nr)
             *ptrx = x;
@@ -281,8 +302,6 @@ static int randsample_static_position(segment *seg,float *ptrx,float *ptry){
 
 static void interpolate(segment *seg,int now,float *x,float *y){
     segment static_seg = {0,0,0,0,0,0,0,0};
-    if ((now < seg->t) || (now >=seg->nt))
-        return;
     // compute percentage
     float p = (now - seg->t)*1.0f/(seg->nt-seg->t);
 
@@ -294,7 +313,7 @@ static void interpolate(segment *seg,int now,float *x,float *y){
     // - never exceeding twice the original cell radius
     static_seg = *seg;
     static_seg.r = MIN(seg->r + sqrt(now-seg->t)*WALK_SPEED, 2. * seg->r);
-    static_seg.nr = MIN(seg->nr + sqrt(now)*WALK_SPEED, 2 * 2. * seg->nr);
+    static_seg.nr = MIN(seg->nr + sqrt(seg->nt-now)*WALK_SPEED, 2 * 2. * seg->nr);
     int ret = randsample_static_position(&static_seg,x,y);
     if (ret == 0){
         randsample_moving_position(seg,p,x,y);
@@ -318,8 +337,9 @@ static void parse_file(char *filename){
     memcpy(buff,c-11,10);
     memcpy(buff+10," 04:30:00",9);
     buff[19]='\0';
-    printf("day start s = <%s>\n",buff);
-    day_start = parse_date(buff);
+    day_start = parse_date(buff) + TSTEP; 
+    time_t day_end = parse_date(buff) + 3600*24; 
+    printf("begin at %s\n",timetodate(day_start));
 
     read = getline(&line, &len, fp);
 
@@ -339,7 +359,7 @@ static void parse_file(char *filename){
         int rep;
         int ix,iy,it;
 
-        for (t = t_start;t < seg.nt;t+=TSTEP)
+        for (t = t_start;(t < seg.nt)||(t==day_end);t+=TSTEP)
         {
             it = IDT(t);
 //            printf("%d<%d<%d\n",(int)t_start,(int)t,(int)seg.nt);
@@ -354,10 +374,12 @@ static void parse_file(char *filename){
                 iy = IDY(y);
                 const char * date = 0;
                 date = timetodate(t);
-//                printf("<<< %f|%f|%s %d,%d,%d\n",x,y,date,ix,iy,it);
-                if ((ix<XCOUNT) && (ix>=0) && (iy<YCOUNT) && (iy>=0))
+                //printf("#%d === %f|%f|%s %d,%d,%d\n",rep,x,y,date,ix,iy,it);
+                char inside = (x<XMAX) & (y<YMAX) & (x>XMIN) & (y>YMIN);
+                inside &= (ix<XCOUNT) & (ix>=0) & (iy<YCOUNT) & (iy>=0);
+
+                if (inside)
                 {
-//                  printf("%f/%d = %f\n",scaling,REPEAT,1.*scaling/(1.*REPEAT));
                     presence[ix][iy][it] += 1.*scaling/(1.*REPEAT);
                 }
             }
@@ -370,7 +392,6 @@ static void parse_file(char *filename){
     return;
 }
 
-#if 0
 static void test_intersection(void){
     segment is,os;
 
@@ -417,7 +438,6 @@ static void test_uniform(){
     return; 
 }
 
-#endif
 static void test_date(){
     char *date = "2014-12-14 03:00:00";
     const char *pdate = NULL;
@@ -459,29 +479,33 @@ static void dump_presence(char *filename){
 }
 
 void test_presence(){
-    float minv;
-    float maxv = -1000000000;
+    float maxv;
+    float count;
     float sumv;
     int ix,iy,it;
     time_t t;
     const char *date;
     for (it=0;it<TCOUNT;it++)
     {
+        count = 0;
         sumv = 0;
-        minv =  1000000000;
         maxv = -1000000000;
         for (ix=0;ix<XCOUNT;ix++)
         {
             for (iy=0;iy<YCOUNT;iy++)
             {
-                minv = MIN(minv,presence[ix][iy][it]);
-                maxv = MAX(maxv,presence[ix][iy][it]);
-                sumv += presence[ix][iy][it];
+                float p = presence[ix][iy][it];
+                if (p > 0)
+                {
+                    count++;
+                    maxv = MAX(maxv,p);
+                    sumv += presence[ix][iy][it];
+                }
             }
         }
         t = it*TSTEP + day_start;
         date = timetodate(t);
-        printf("presence %s min=%f, max=%f, sum=%f\n",date,minv,maxv,sumv);
+        printf("presence %s max=%f, avg=%f, sum=%f\n",date,maxv,sumv/count,sumv);
     }
 }
 
@@ -497,7 +521,7 @@ int main(int argc,char *argv[])
     if (argc >1)
         in_filename = argv[1];
     else 
-        in_filename = "static_test_1975-11-15.tsv";
+        in_filename = "presence_test_1975-11-15.tsv";
 
     if (argc >2)
         out_filename = argv[2];

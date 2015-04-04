@@ -206,6 +206,7 @@ assert bwmatching('TCCTCTATGAGATCCTATTCTATGAAACCTTCA$GACCAAAATTCTCCGGC',['CCT', 
 #    text = f.read().strip()
 #with open(fname+'.out', "w") as f:
 #    f.write(ibwt(text))           
+<<<<<<< HEAD
 
 fname = 'C:/Users/ngaude/Downloads/dataset_300_8.txt'
 with open(fname, "r") as f:
@@ -214,3 +215,6 @@ with open(fname, "r") as f:
     p = text[1].split(' ')
 with open(fname+'.out', "w") as f:
     f.write(' '.join(map(str,bwmatching(s,p))))
+=======
+        
+>>>>>>> origin/master

@@ -12,9 +12,9 @@
 #define XMAX        604000
 #define YMIN        2424000
 #define YMAX        2428000
-#define XYSTEP      200
+#define XYSTEP      100
 #define TSTEP       1800
-#define REPEAT      25
+#define REPEAT      100
 #define WALK_SPEED  1.f
 #define CNIL_THRESHOLD  100
 #else
@@ -105,16 +105,14 @@ static void circle_random(float x,float y,float r,float *ptrx,float *ptry){
         seg.nx = uniform_random(x-r,x+r);
         seg.ny = uniform_random(y-r,y+r);
         float d = norm(&seg);
+        *ptrx = seg.nx;
+        *ptry = seg.ny;
         if (d < r){
             // x,y is in the intersection of 
             // circle(seg->x,seg->y,seg->r) and circle(seg->nx,seg->ny,seg->nr)
-            *ptrx = seg.nx;
-            *ptry = seg.ny;
             return;
         }
     }
-    *ptrx = x;
-    *ptry = y;
     return;
 #endif
 }
@@ -286,16 +284,16 @@ static int randsample_static_position(segment *seg,float *ptrx,float *ptry){
         segb.ny = y;
         float da = norm(&sega);
         float db = norm(&segb);
+        *ptrx = x;
+        *ptry = y;
         if ((da < seg->r) && (db < seg->nr)){
             // x,y is in the intersection of 
             // circle(seg->x,seg->y,seg->r) and circle(seg->nx,seg->ny,seg->nr)
-            *ptrx = x;
-            *ptry = y;
             return 1;
         }
     }
-    *ptrx = (box[0]+box[1])/2.;
-    *ptry = (box[2]+box[3])/2.;
+//    *ptrx = (box[0]+box[1])/2.;
+//    *ptry = (box[2]+box[3])/2.;
     return 2;
 }
 
@@ -307,13 +305,13 @@ static void interpolate(segment *seg,int now,float *x,float *y){
 
     // for a circle_to_cirle intersection 
     // leading to a static position insight
-    // allow :
-    // - a static drift speed of 1m.s-1
-    // - a random walking with maximum displacement ~ sqrt(time)
-    // - never exceeding twice the original cell radius
+    // defines as :
+    // - as a random walk
+    // - with distance proportionnal ~ sqrt(time)
+    // - with speed constant WALK_SPEED m.s-1
     static_seg = *seg;
-    static_seg.r = MIN(seg->r + sqrt(now-seg->t)*WALK_SPEED, 2. * seg->r);
-    static_seg.nr = MIN(seg->nr + sqrt(seg->nt-now)*WALK_SPEED, 2 * 2. * seg->nr);
+    static_seg.r = seg->r + sqrt(now-seg->t)*WALK_SPEED;
+    static_seg.nr = seg->nr + sqrt(seg->nt-now)*WALK_SPEED;
     int ret = randsample_static_position(&static_seg,x,y);
     if (ret == 0){
         randsample_moving_position(seg,p,x,y);

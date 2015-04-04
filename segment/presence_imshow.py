@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time,datetime
 import math
+import sys
 
 
 def epoch_sec(t):
@@ -19,47 +20,58 @@ def str_date(s):
     sdt = dt.strftime('%Y-%m-%d %H:%M:%S')
     return sdt 
 
-def save_presence(d):
-    m = np.array(df[df.dat_heur == d].value)
-    xaxis = sorted(set(df.xmin))
-    yaxis = sorted(set(df.ymin))
-    w = len(xaxis)
-    h = len(yaxis)
-    print d,':',w,'x',h
-    m.shape = (w,h)
+def save_presence(t):
+    m = ms[t]
     fig = plt.figure()
     fig.set_size_inches(1, 1, forward=False)
     ax = plt.Axes(fig, [0., 0., 1., 1.])
     ax.set_axis_off()
     fig.add_axes(ax)
-    ax.contour(m)
-    ax.imshow(m,vmin=0,vmax=vmax)
-    fn = '/home/ngaude/workspace/data/image/presence_'+d+'.png'
+    ax.imshow(m,vmin=vmin,vmax=vmax,interpolation='bicubic')
+    fn = '/home/ngaude/workspace/data/image/presence_'+t+'.png'
     plt.savefig(fn,dpi = 720)
     plt.close()
 
+"""
+*interpolation*:
+Acceptable values are *None*, 'none', 'nearest', 'bilinear',
+'bicubic', 'spline16', 'spline36', 'hanning', 'hamming',
+'hermite', 'kaiser', 'quadric', 'catrom', 'gaussian',
+'bessel', 'mitchell', 'sinc', 'lanczos'
+"""
 
-def plot_presence(d):
-    m = np.array(df[df.dat_heur == d].value)
-    print m[0]
-    xaxis = sorted(set(df.xmin))
-    yaxis = sorted(set(df.ymin))
-    w = len(xaxis)
-    h = len(yaxis)
-    m.shape = (w,h)
-    plt.figure(d)
-    plt.imshow(m)
+def plot_presence(t):
+    m = ms[t]
+    plt.figure(t)
+    plt.imshow(m,vmin=vmin,vmax=vmax,interpolation='bicubic')
     plt.show()
 
 df = pd.read_csv('presence.csv', names = ('dat_heur','xmin','ymin','xmax','ymax','value'))
-vmax = max(df.value)*0.9
 
-for d in sorted(set(df.dat_heur)):
-    if d[11:] != '04:30:00':
-        save_presence(d)
+ms = df.groupby(df.dat_heur).value.apply(np.array)
+xs = sorted(set(df.xmin))
+ys = sorted(set(df.ymin))
+ts = sorted(set(df.dat_heur))
+w = len(xs)
+h = len(ys)
+for m in ms:
+    m.shape =  (w,h)
+    
+# compute background map from presence maps
+bkg = ms.mean()
 
-"""
-d = "1975-11-15 22:30:00"
-m = np.array(df[df.dat_heur == d].value)
-plot_presence(d)
-"""
+# remove background map from presence maps
+ms = [m-bkg for m in ms]
+vmin = min([m.min() for m in ms])
+vmax = max([m.max() for m in ms])
+
+if len(sys.argv)>1:
+    try:
+        t = int(sys.argv[1])
+    except ValueError:
+        t = sys.argv[1]
+    plot_presence(t)
+else:    
+    for i,t in enumerate(ts):
+        print 'image '+str(i)+'/'+str(len(ts))+':',t
+        save_presence(t)

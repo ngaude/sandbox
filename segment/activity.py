@@ -69,5 +69,7 @@ km = KMeans(n_clusters = k)
 km.fit(m)
 
 mp = km.labels_
-mp.shape(20,20)
+mp.shape = (20,20)
+plt.figure()
 plt.imshow(mp)
+plt.show()

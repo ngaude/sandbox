@@ -12,11 +12,11 @@
 #define XMAX        604000
 #define YMIN        2424000
 #define YMAX        2428000
-#define XYSTEP      100
-#define TSTEP       300
-#define REPEAT      20
+#define XYSTEP      200
+#define TSTEP       1800
+#define REPEAT      25
 #define WALK_SPEED  1.f
-#define CNIL_THRESHOLD  100
+#define CNIL_THRESHOLD  0
 #else
 #define XMIN        0
 #define XMAX        2000
@@ -348,6 +348,13 @@ static void parse_file(char *filename){
         parse_line(line,len,&seg,&scaling);
         time_t t_start,t;
         t_start = day_start + (seg.t - day_start + TSTEP - 1)/TSTEP*TSTEP;
+
+// remove first and last segment
+#if 1
+    if (seg.t == (day_start-TSTEP+1) || (seg.nt == day_end)){
+        continue;
+    }
+#endif
 
 //        printf("| %f,%f,%f,%f,%f,%f,%f\n",seg.x,seg.y,seg.r,seg.nx,seg.ny,seg.nr,scaling);
 //        printf("| %d,%s\n",(int)seg.t,timetodate(seg.t));

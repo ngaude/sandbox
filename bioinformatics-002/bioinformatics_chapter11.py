@@ -54,42 +54,6 @@ def upgma(n,D):
         clusterid.pop(c2-1)
         clusterid.append(nid)
         return clusters_distance()
-        
-    def merge_clusters_to_be_fixed(c1,c2):
-        # return a new distance cluster matrix and update the clusters list...
-        (n,m) = dclusters.shape
-        assert n == m
-        assert c1 != c2
-        assert c1 < n
-        assert c2 < m
-        # copy all element but c1,c2 columns,rows
-        ii = 0
-        jj = 0
-        dmerged = np.zeros( (n-1,n-1), dtype = float )
-        for i in range(n):
-            if i == c1 or i == c2:
-                continue
-            for j in range(n):
-                if j == c1 or j == c2:
-                    continue
-                dmerged[ii,jj] = dclusters[i,j]
-                jj +=1
-            ii +=1
-            jj = 0
-        # update last column and row with merged cluster
-        for i in range(n-2):
-            dc = (dclusters[c1,i]*len(clusters[c1]) + dclusters[c2,i]*len(clusters[c2]))/float(len(clusters[c2])+len(clusters[c1]))
-            dmerged[n-2,i] = dc
-            dmerged[i,n-2] = dc
-        c = clusters[c1]+clusters[c2]
-        clusters.pop(c1)
-        clusters.pop(c2-1)
-        clusters.append(c)
-        nid = max(clusterid)+1
-        clusterid.pop(c1)        
-        clusterid.pop(c2-1)
-        clusterid.append(nid)
-        return dmerged        
 
     # init vars    
     dclusters = D
@@ -139,24 +103,167 @@ res = {0: [(5, 7.0)], 1: [(6, 8.8333333333333339)], 2: [(4, 5.0)], 3: [(4, 5.0)]
 assert T == res
 
 
+def neighbor_joining(n,D):
+    """
+    CODE CHALLENGE: Implement NeighborJoining.
+    Input: An integer n, followed by an n x n distance matrix.
+    Output: An adjacency list for the tree resulting from applying 
+    the neighbor-joining algorithm.
+    """
+    def total_distance():
+        return D.sum(axis=1)
+    
+    def neighbor_joining_distance():
+        n = len(D)
+        tD = total_distance()        
+        tD.shape = (n,1)
+        o = np.ones(n)
+        o.shape = (1,n)
+        tD = np.dot(tD,o)
+        njD = (n-2.)*D - tD - tD.transpose()
+        for i in range(n):
+            njD[i,i] = 0
+        return njD
+
+    def find_pair():
+        n = len(D)
+        assert n>2
+        njD = neighbor_joining_distance()
+        dmin = njD[0,1] 
+        pmin = (0,1)                
+        for i in range(n):            
+            for j in range(i+1,n):
+                if njD[i,j] < dmin:
+                    dmin = njD[i,j]
+                    pmin = (i,j)
+        return pmin
+
+    def delta_distance():
+        n = len(D)
+        tD = total_distance()        
+        tD.shape = (n,1)
+        o = np.ones(n)
+        o.shape = (1,n)
+        tD = np.dot(tD,o)
+        return (tD-tD.transpose())/float(n-2)
+    
+    def limb_length(i,j):
+        dD = delta_distance()
+        lli = 0.5*(D[i,j]+dD[i,j])
+        llj = 0.5*(D[i,j]-dD[i,j])
+        return (lli,llj)
+
+    def reduce_distance(c1,c2):
+        n = len(D)
+        r = range(n)
+        # add a new row/column m to D 
+        # so that Dk,m = Dm,k = (1/2)(Dk,i + Dk,j - Di,j) for any k
+        aD = np.zeros( (n+1,n+1), dtype = float )
+        for ii,i in enumerate(r):
+            for jj,j in enumerate(r):
+                aD[ii,jj] = D[i,j]
+        # do not compute m row/colmun for c1 row/column as well as c2 
+        r.remove(c1)
+        r.remove(c2)
+        for k in r:
+            aDk = 0.5*(D[k,c1]+D[k,c2]-D[c1,c2])
+            aD[k,n] = aDk
+            aD[n,k] = aDk
+        # remove c1 row/column as well as c2 row/column from D/aD
+        rD = np.zeros( (n-1,n-1), dtype = float )
+        # copy also the m row/column from aD
+        r.append(n)
+        for ii,i in enumerate(r):
+            for jj,j in enumerate(r):
+                rD[ii,jj] = aD[i,j]
+        return rD
+    T = {}
+    nodeid = range(n) 
+    while len(D)>2:
+        (i,j) = find_pair()
+        (ii,jj) = (nodeid[i],nodeid[j])
+        (wi,wj) = limb_length(i,j)
+        # insert a k node linked to i and j
+        kk =  max(nodeid)+1
+        T.setdefault(kk,[]).append((ii,wi))
+        T.setdefault(ii,[]).append((kk,wi))
+        T.setdefault(kk,[]).append((jj,wj))
+        T.setdefault(jj,[]).append((kk,wj))
+
+        # update the node id reference
+        nodeid.append(kk)
+        nodeid.remove(ii)
+        nodeid.remove(jj)
+#        print '------'
+#        print 'D',D
+#        print 'njD',neighbor_joining_distance()
+#        print 'tD',total_distance()
+#        print '(i,j)',(ii,jj),'(w,w)',wi,wj
+#        print 'nodeid',nodeid
+#        print tree_tostring(T)
+#        print '------'
+    
+        # reduce the distance matrix
+        D = reduce_distance(i,j)
+
+        
+    # insert the last edge from the D 2x2 matrix
+    T.setdefault(nodeid[0],[]).append((nodeid[1],D[0,1]))
+    T.setdefault(nodeid[1],[]).append((nodeid[0],D[1,0]))
+    
+    return T
+
+def tree_tostring(T):
+    s = ''
+    for u,vw in T.iteritems():
+        for (v,w) in vw:
+            s += str(u)+'->'+str(v)+':'+"{0:.3f}".format(w)+'\n'
+    return s
+
+T = neighbor_joining(4,D = np.array([[0,13,21,22],[13,0,12,13],[21,12,0,13],[22,13,13,0]]))
+res = {0: [(4, 11.0)], 1: [(4, 2.0)], 2: [(5, 6.0)], 3: [(5, 7.0)], 4: [(0, 11.0), (1, 2.0), (5, 4.0)], 5: [(2, 6.0), (3, 7.0), (4, 4.0)]}
+assert res == T
+
+T = neighbor_joining(4,D = np.array([[0,3,4,3],[3,0,4,5],[4,4,0,2],[3,5,2,0]]))
+res = {0: [(4, 1.0)], 1: [(4, 2.0)], 2: [(5, 1.0)], 3: [(5, 1.0)], 4: [(0, 1.0), (1, 2.0), (5, 1.5)], 5: [(2, 1.0), (3, 1.0), (4, 1.5)]}
+assert res == T
+
+T = neighbor_joining(4,D = np.array([[0,23,27,20],[23,0,30,28],[27,30,0,30],[20,28,30,0]],dtype = float))
+res = {0: [(4, 8.0)], 1: [(5, 13.5)], 2: [(5, 16.5)], 3: [(4, 12.0)], 4: [(0, 8.0), (3, 12.0), (5, 2.0)], 5: [(1, 13.5), (2, 16.5), (4, 2.0)]}
+assert res == T
+
 ############################################################
 #fpath = 'C:/Users/ngaude/Downloads/'
 #fpath = '/home/ngaude/Downloads/'
 fpath = 'C:/Users/Utilisateur/Downloads/'
 ############################################################
 
-fname = fpath + 'dataset_10332_8.txt'
+#fname = fpath + 'dataset_10332_8.txt'
+#with open(fname, "r") as f:
+#    lines = f.read().strip().split('\n')
+#    n = int(lines[0])
+#    d = np.zeros(shape=(n,n),dtype = float)    
+#    for i,l in enumerate(lines[1:]):
+#        for j,v in enumerate(map(int,l.split('\t')[:-1])):
+#            d[i,j] = v
+#T = upgma(n,d)
+#with open(fname+'.out', "w") as f:
+#   for u,vw in T.iteritems():
+#       for (v,w) in vw:
+#           f.write(str(u)+'->'+str(v)+':'+"{0:.3f}".format(w)+'\n')
+
+fname = fpath + 'dataset_10333_6.txt'
 with open(fname, "r") as f:
     lines = f.read().strip().split('\n')
     n = int(lines[0])
     d = np.zeros(shape=(n,n),dtype = float)    
     for i,l in enumerate(lines[1:]):
-        for j,v in enumerate(map(int,l.split('\t')[:-1])):
+        l = l.replace('\t',' ')
+        valstr = l.split(' ')
+        if valstr[-1]=='':
+            valstr = valstr[:-1]
+        for j,v in enumerate(map(int,valstr)):
             d[i,j] = v
-#    d = map(lambda r: map(int, r.split('\t')[:-1]), lines[1:])
-#    d = np.array(d)
-T = upgma(n,d)
+T = neighbor_joining(n,d)
 with open(fname+'.out', "w") as f:
-   for u,vw in T.iteritems():
-       for (v,w) in vw:
-           f.write(str(u)+'->'+str(v)+':'+"{0:.3f}".format(w)+'\n')
+    f.write(tree_tostring(T))

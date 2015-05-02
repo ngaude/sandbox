@@ -223,6 +223,7 @@ def tree_nearest_neighbors(e,utree):
     '''
     a = e[0]
     b = e[1]
+    
     atree = utree[a][:]
     atree.remove(b)
     w = atree[0]
@@ -231,6 +232,29 @@ def tree_nearest_neighbors(e,utree):
     btree.remove(a)
     y = btree[0]
     z = btree[1] 
+
+#    # neighbor utree1 is like wya <=>bxz :
+#    utree1 = copy.copy(utree)
+#    utree1[a] = [b,y,w]
+#    utree1[y] = utree1[y][:]
+#    utree1[y].remove(b)
+#    utree1[y].append(a)
+#    utree1[b] = [a,x,z]
+#    utree1[x] = utree1[x][:]
+#    utree1[x].remove(a)
+#    utree1[x].append(b)
+#        
+#    # neighbor utree2 is like wza <=>bxy :
+#    utree2 = copy.copy(utree)
+#    utree2[a] = [b,z,w]
+#    utree2[z] = utree2[z][:]
+#    utree2[z].remove(b)
+#    utree2[z].append(a)
+#    utree2[b] = [a,x,y]
+#    utree2[x] = utree2[x][:]
+#    utree2[x].remove(a)
+#    utree2[x].append(b)
+#    return (utree1,utree2)
     
     # neighbor utree1 is like wya <=>bxz :
     utree1 = copy.deepcopy(utree)
@@ -251,15 +275,15 @@ def tree_nearest_neighbors(e,utree):
     utree2[x].append(b)
     return (utree1,utree2)
 
-e = [(4,0),(0,4),(4,1),(1,4),(5,2),(5,3),(2,5),(3,5),(4,5),(5,4)]
-tree = {0: [4], 1: [4], 2: [5], 3: [5], 4: [0, 1, 5], 5: [2, 3, 4]}
-assert tree == edge2tree(e)
-assert sorted(e) == sorted(tree2edge(tree))
-res1 = [(0, 4), (1, 5), (2, 4), (3, 5), (4, 0), (4, 2), (4, 5), (5, 1), (5, 3), (5, 4)]
-res2 = [(0, 4), (1, 5), (2, 5), (3, 4), (4, 0), (4, 3), (4, 5), (5, 1), (5, 2), (5, 4)]
-edge1,edge2 = map(tree2edge, tree_nearest_neighbors((4,5), edge2tree(e)))
-assert res1 == sorted(edge1)
-assert res2 == sorted(edge2)
+#e = [(4,0),(0,4),(4,1),(1,4),(5,2),(5,3),(2,5),(3,5),(4,5),(5,4)]
+#tree = {0: [4], 1: [4], 2: [5], 3: [5], 4: [0, 1, 5], 5: [2, 3, 4]}
+#assert tree == edge2tree(e)
+#assert sorted(e) == sorted(tree2edge(tree))
+#res1 = [(0, 4), (1, 5), (2, 4), (3, 5), (4, 0), (4, 2), (4, 5), (5, 1), (5, 3), (5, 4)]
+#res2 = [(0, 4), (1, 5), (2, 5), (3, 4), (4, 0), (4, 3), (4, 5), (5, 1), (5, 2), (5, 4)]
+#edge1,edge2 = map(tree2edge, tree_nearest_neighbors((4,5), edge2tree(e)))
+#assert res1 == sorted(edge1)
+#assert res2 == sorted(edge2)
 
 def large_parsimony_problem(n,edges,labels):
     '''
@@ -269,12 +293,17 @@ def large_parsimony_problem(n,edges,labels):
     Output: The parsimony score and unrooted labeled tree obtained after every step of the nearest
     neighbor interchange heuristic. Each step should be separated by a blank line.
     '''
+    print '>>> go: !'
     (p,e) = small_parsimony_unrooted_problem(n,edges,labels)
     ret = [(p,e),]
     parsimony = p
     while True:
         minimum_achieved = True
-        for e in edges:
+        print 'parsimony',parsimony
+        candidate_edges = set([(min(a,b),max(a,b)) for (a,b) in edges if a>=n and b>=n])
+        print candidate_edges
+        for e in candidate_edges:
+            print e,len(candidate_edges)
             if e[0] < n or e[1] < n:
                 # simply skip leaves
                 continue
@@ -282,39 +311,44 @@ def large_parsimony_problem(n,edges,labels):
             (p,e) = small_parsimony_unrooted_problem(n,edges1,labels)
             if p < parsimony:
                 parsimony = p
-                edges = edges1
+                nedges = edges1
                 minimum_achieved = False
             (p,e) = small_parsimony_unrooted_problem(n,edges2,labels)
             if p < parsimony:
                 parsimony = p
-                edges = edges2
+                nedges = edges2
                 minimum_achieved = False
         if minimum_achieved == True:
             break
         else:
+            edges = nedges
             (p,e) = small_parsimony_unrooted_problem(n,edges,labels)
             ret.append((p,e))
             
     return ret 
         
-n = 4
-labels = ['CGAAGATTCTAA','ATGCCGGGCTCG','CTTTTAGAAGCG','AACTCATGATAT']
-v = [(0,4),(1,4),(2,5),(3,5),(5,3),(5,2),(5,4),(4,1),(4,0),(4,5)]
-ret = large_parsimony_problem(n,v,labels)
-print ret
+#n = 4
+#labels = ['CGAAGATTCTAA','ATGCCGGGCTCG','CTTTTAGAAGCG','AACTCATGATAT']
+#v = [(0,4),(1,4),(2,5),(3,5),(5,3),(5,2),(5,4),(4,1),(4,0),(4,5)]
+#ret = large_parsimony_problem(n,v,labels)
+#assert ret[-1][0] == 21
             
 def parsing_large_parsimony_problem_input(lines):
     n = int(lines[0])
     labels = []
     edges = []
-    for l in lines:
+    for l in lines[1:]:
         a = l.split('->')[0]
         b = l.split('->')[1]
-        if a.isdigit()==False:
+        if a.isdigit() == True:
+            a = int(a)
+        else:
             if a not in labels:
                 labels.append(a)
             a = labels.index(a)
-        if b.isdigit()==False:
+        if b.isdigit() == True:
+            b = int(b)
+        else:
             if b not in labels:
                 labels.append(b)
             b = labels.index(b)
@@ -372,16 +406,15 @@ fpath = 'C:/Users/ngaude/Downloads/'
 #with open(fname+'.out', "w") as f:
 #    f.write(s)
 
-fname = fpath + 'dataset_10336_6.txt'
-fname = fpath + 'Large_Parsimony_Heuristic_with_NNI.txt'
+fname = fpath + 'dataset_10336_8.txt'
+#fname = fpath + 'Large_Parsimony_Heuristic_with_NNI.txt'
 with open(fname, "r") as f:
     lines = f.read().strip().split('\n')
-    a = int(lines[0].split(' ')[0])
-    b = int(lines[0].split(' ')[1])
-    v = map(lambda l:(int(l.split('->')[0]),int(l.split('->')[1])),lines[1:])
-edge1,edge2 = map(tree2edge, tree_nearest_neighbors((a,b), edge2tree(v)))
-s = '\n'.join(map(lambda e: str(e[0])+'->'+str(e[1]),edge1))
-s += '\n'+'\n'
-s += '\n'.join(map(lambda e: str(e[0])+'->'+str(e[1]),edge2))
+    n,edges,labels = parsing_large_parsimony_problem_input(lines)
+pes = large_parsimony_problem(n,edges,labels)
 with open(fname+'.out', "w") as f:
-    f.write(s)
+    for p,e in pes:
+        f.write(str(p)+'\n')
+        for (a,b) in e:
+            f.write(a+'->'+b+':'+str(hamming(a,b))+'\n')
+            f.write(b+'->'+a+':'+str(hamming(a,b))+'\n')

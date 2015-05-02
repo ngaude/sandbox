@@ -130,18 +130,12 @@ def small_parsimony_problem(n,edges,labels):
     rbranch = (''.join(s[root]), ''.join(s[tree[node][1]]))
     return (parsimony,ret[:],rbranch,lbranch)
         
-
 n = 4
 v = [(4,0),(4,1),(5,2),(5,3),(6,4),(6,5)]
 labels = ['CAAATCCC', 'ATTGCGAC', 'CTGCGCTG', 'ATGGACGA']
 (p,e,r,l) = small_parsimony_problem(n,v,labels)
 assert p == 16
 
-#n = 3
-#v = [(3,0),(3,4),(4,1),(4,2)]
-#labels = ['AAA', 'ATA', 'AGA']
-#(p,e,r,l) = small_parsimony_problem(n,v,labels)
-#print p,e,r,l
 
 def small_parsimony_unrooted_problem(n,uedges,labels):
     '''
@@ -154,24 +148,25 @@ def small_parsimony_unrooted_problem(n,uedges,labels):
     '''
     # compute unrooted tree from edges
     utree = {}
+    m = n+1
     for uedge in uedges:
         node = uedge[0]
         child = uedge[1]
+        m = max(node+1,child+1,m)
         utree.setdefault(node,[]).append(child)
     
     # m, total node count
-    m = 2*n-1 
     
      # given edge create a rooted tree from unrooted tree
     def get_rooted_tree(uedge):
         (lnode,rnode) = uedge
-        root = m-1
-        visited = [False]*m
+        root = m
+        visited = [False]*(m+1)
         edges = []
         rooted_tree = copy.deepcopy(utree)
         rooted_tree[rnode].remove(lnode)
         rooted_tree[lnode].remove(rnode)
-        rooted_tree[root] = (lnode,rnode)
+        rooted_tree[root] = [lnode,rnode]
         def dfs_rooted_tree(node):
             if (node < n) or (visited[node] == True):
                 # tree bottom or already visited, simply return
@@ -202,8 +197,69 @@ labels = [ 'TCGGCCAA','CCTGGCTG','CACAGGAT','TGAGTACC']
 (p,e) = small_parsimony_unrooted_problem(n,u,labels)           
 assert p == 17
         
-            
+
+def edge2tree(edges):
+    tree = {}
+    for e in edges:
+        node = e[0]
+        child = e[1]
+        tree.setdefault(node,[]).append(child)
+    return tree
     
+def tree2edge(tree):
+    edges = []
+    for node,children in tree.iteritems():
+        for child in children:
+            edges.append((node,child))
+    return edges
+
+def tree_nearest_neighbors(e,utree):
+    '''
+    CODE CHALLENGE: Solve the Nearest Neighbors of a Tree Problem.
+    Input: Two internal nodes a and b specifying an edge e, followed by an adjacency
+    list of an unrooted binary tree.
+    Output: Two adjacency lists representing the nearest neighbors of the tree with
+    respect to e. Separate the adjacency lists with a blank line.
+    '''
+    a = e[0]
+    b = e[1]
+    atree = utree[a][:]
+    atree.remove(b)
+    w = atree[0]
+    x = atree[1]
+    btree = utree[b][:]
+    btree.remove(a)
+    y = btree[0]
+    z = btree[1] 
+    
+    # neighbor utree1 is like wya <=>bxz :
+    utree1 = copy.deepcopy(utree)
+    utree1[a] = [b,y,w]
+    utree1[y].remove(b)
+    utree1[y].append(a)
+    utree1[b] = [a,x,z]
+    utree1[x].remove(a)
+    utree1[x].append(b)
+        
+    # neighbor utree2 is like wza <=>bxy :
+    utree2 = copy.deepcopy(utree)
+    utree2[a] = [b,z,w]
+    utree2[z].remove(b)
+    utree2[z].append(a)
+    utree2[b] = [a,x,y]
+    utree2[x].remove(a)
+    utree2[x].append(b)
+    return (utree1,utree2)
+
+e = [(4,0),(0,4),(4,1),(1,4),(5,2),(5,3),(2,5),(3,5),(4,5),(5,4)]
+tree = {0: [4], 1: [4], 2: [5], 3: [5], 4: [0, 1, 5], 5: [2, 3, 4]}
+assert tree == edge2tree(e)
+assert sorted(e) == sorted(tree2edge(tree))
+res1 = [(0, 4), (1, 5), (2, 4), (3, 5), (4, 0), (4, 2), (4, 5), (5, 1), (5, 3), (5, 4)]
+res2 = [(0, 4), (1, 5), (2, 5), (3, 4), (4, 0), (4, 3), (4, 5), (5, 1), (5, 2), (5, 4)]
+edge1,edge2 = map(tree2edge, tree_nearest_neighbors((4,5), edge2tree(e)))
+assert res1 == sorted(edge1)
+assert res2 == sorted(edge2)
 
 ############################################################
 fpath = 'C:/Users/ngaude/Downloads/'
@@ -227,18 +283,31 @@ fpath = 'C:/Users/ngaude/Downloads/'
 #        f.write(b+'->'+a+':'+str(hamming(a,b))+'\n')
 
 #fname = fpath + 'Small_Parsimony_Unrooted_Tree.txt'
-fname = fpath + 'dataset_10335_12.txt'
+#fname = fpath + 'dataset_10335_12.txt'
+#with open(fname, "r") as f:
+#    lines = f.read().strip().split('\n')
+#    n = int(lines[0])
+#    labels = map(lambda l:l.split('->')[0],lines[1:2*n+1:2])
+#    v  = map(lambda (i,l):(i,int(l.split('->')[1])),enumerate(lines[1:2*n+1:2]))
+#    v += map(lambda (i,l):(int(l.split('->')[0]),i),enumerate(lines[2:2*n+1:2]))
+#    v += map(lambda l:(int(l.split('->')[0]),int(l.split('->')[1])),lines[2*n+1:])
+#    (p,e) = small_parsimony_unrooted_problem(n,v,labels)
+#with open(fname+'.out', "w") as f:
+#    f.write(str(p)+'\n')
+#    for (a,b) in e:
+#        f.write(a+'->'+b+':'+str(hamming(a,b))+'\n')
+#        f.write(b+'->'+a+':'+str(hamming(a,b))+'\n')
+
+
+fname = fpath + 'dataset_10336_6.txt'
 with open(fname, "r") as f:
     lines = f.read().strip().split('\n')
-    n = int(lines[0])
-    labels = map(lambda l:l.split('->')[0],lines[1:2*n+1:2])
-    v  = map(lambda (i,l):(i,int(l.split('->')[1])),enumerate(lines[1:2*n+1:2]))
-    v += map(lambda (i,l):(int(l.split('->')[0]),i),enumerate(lines[2:2*n+1:2]))
-    v += map(lambda l:(int(l.split('->')[0]),int(l.split('->')[1])),lines[2*n+1:])
-    (p,e) = small_parsimony_unrooted_problem(n,v,labels)
+    a = int(lines[0].split(' ')[0])
+    b = int(lines[0].split(' ')[1])
+    v = map(lambda l:(int(l.split('->')[0]),int(l.split('->')[1])),lines[1:])
+edge1,edge2 = map(tree2edge, tree_nearest_neighbors((a,b), edge2tree(v)))
+s = '\n'.join(map(lambda e: str(e[0])+'->'+str(e[1]),edge1))
+s += '\n'+'\n'
+s += '\n'.join(map(lambda e: str(e[0])+'->'+str(e[1]),edge2))
 with open(fname+'.out', "w") as f:
-    f.write(str(p)+'\n')
-    for (a,b) in e:
-        print a,b
-        f.write(a+'->'+b+':'+str(hamming(a,b))+'\n')
-        f.write(b+'->'+a+':'+str(hamming(a,b))+'\n')
+    f.write(s)

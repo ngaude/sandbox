@@ -261,6 +261,67 @@ edge1,edge2 = map(tree2edge, tree_nearest_neighbors((4,5), edge2tree(e)))
 assert res1 == sorted(edge1)
 assert res2 == sorted(edge2)
 
+def large_parsimony_problem(n,edges,labels):
+    '''
+    CODE CHALLENGE: Implement the nearest neighbor interchange heuristic for the Large Parsimony Problem.
+    Input: An integer n, followed by an adjacency list for an unrooted binary tree whose n leaves are
+    labeled by DNA strings and whose internal nodes are labeled by integers.
+    Output: The parsimony score and unrooted labeled tree obtained after every step of the nearest
+    neighbor interchange heuristic. Each step should be separated by a blank line.
+    '''
+    (p,e) = small_parsimony_unrooted_problem(n,edges,labels)
+    ret = [(p,e),]
+    parsimony = p
+    while True:
+        minimum_achieved = True
+        for e in edges:
+            if e[0] < n or e[1] < n:
+                # simply skip leaves
+                continue
+            edges1,edges2 = map(tree2edge, tree_nearest_neighbors(e, edge2tree(edges)))
+            (p,e) = small_parsimony_unrooted_problem(n,edges1,labels)
+            if p < parsimony:
+                parsimony = p
+                edges = edges1
+                minimum_achieved = False
+            (p,e) = small_parsimony_unrooted_problem(n,edges2,labels)
+            if p < parsimony:
+                parsimony = p
+                edges = edges2
+                minimum_achieved = False
+        if minimum_achieved == True:
+            break
+        else:
+            (p,e) = small_parsimony_unrooted_problem(n,edges,labels)
+            ret.append((p,e))
+            
+    return ret 
+        
+n = 4
+labels = ['CGAAGATTCTAA','ATGCCGGGCTCG','CTTTTAGAAGCG','AACTCATGATAT']
+v = [(0,4),(1,4),(2,5),(3,5),(5,3),(5,2),(5,4),(4,1),(4,0),(4,5)]
+ret = large_parsimony_problem(n,v,labels)
+print ret
+            
+def parsing_large_parsimony_problem_input(lines):
+    n = int(lines[0])
+    labels = []
+    edges = []
+    for l in lines:
+        a = l.split('->')[0]
+        b = l.split('->')[1]
+        if a.isdigit()==False:
+            if a not in labels:
+                labels.append(a)
+            a = labels.index(a)
+        if b.isdigit()==False:
+            if b not in labels:
+                labels.append(b)
+            b = labels.index(b)
+        edges.append((a,b))
+    return n,edges,labels
+
+
 ############################################################
 fpath = 'C:/Users/ngaude/Downloads/'
 #fpath = '/home/ngaude/Downloads/'
@@ -298,8 +359,21 @@ fpath = 'C:/Users/ngaude/Downloads/'
 #        f.write(a+'->'+b+':'+str(hamming(a,b))+'\n')
 #        f.write(b+'->'+a+':'+str(hamming(a,b))+'\n')
 
+#fname = fpath + 'dataset_10336_6.txt'
+#with open(fname, "r") as f:
+#    lines = f.read().strip().split('\n')
+#    a = int(lines[0].split(' ')[0])
+#    b = int(lines[0].split(' ')[1])
+#    v = map(lambda l:(int(l.split('->')[0]),int(l.split('->')[1])),lines[1:])
+#edge1,edge2 = map(tree2edge, tree_nearest_neighbors((a,b), edge2tree(v)))
+#s = '\n'.join(map(lambda e: str(e[0])+'->'+str(e[1]),edge1))
+#s += '\n'+'\n'
+#s += '\n'.join(map(lambda e: str(e[0])+'->'+str(e[1]),edge2))
+#with open(fname+'.out', "w") as f:
+#    f.write(s)
 
 fname = fpath + 'dataset_10336_6.txt'
+fname = fpath + 'Large_Parsimony_Heuristic_with_NNI.txt'
 with open(fname, "r") as f:
     lines = f.read().strip().split('\n')
     a = int(lines[0].split(' ')[0])

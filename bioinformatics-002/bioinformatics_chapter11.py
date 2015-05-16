@@ -103,6 +103,18 @@ res = {0: [(5, 7.0)], 1: [(6, 8.8333333333333339)], 2: [(4, 5.0)], 3: [(4, 5.0)]
 assert T == res
 
 
+def neighbor_joining_matrix(D):
+    n = len(D)
+    tD = D.sum(axis=1)      
+    tD.shape = (n,1)
+    o = np.ones(n)
+    o.shape = (1,n)
+    tD = np.dot(tD,o)
+    njD = (n-2.)*D - tD - tD.transpose()
+    for i in range(n):
+        njD[i,i] = 0
+    return njD
+
 def neighbor_joining(n,D):
     """
     CODE CHALLENGE: Implement NeighborJoining.
@@ -252,18 +264,26 @@ fpath = 'C:/Users/Utilisateur/Downloads/'
 #       for (v,w) in vw:
 #           f.write(str(u)+'->'+str(v)+':'+"{0:.3f}".format(w)+'\n')
 
-fname = fpath + 'dataset_10333_6.txt'
-with open(fname, "r") as f:
-    lines = f.read().strip().split('\n')
-    n = int(lines[0])
-    d = np.zeros(shape=(n,n),dtype = float)    
-    for i,l in enumerate(lines[1:]):
-        l = l.replace('\t',' ')
-        valstr = l.split(' ')
-        if valstr[-1]=='':
-            valstr = valstr[:-1]
-        for j,v in enumerate(map(int,valstr)):
-            d[i,j] = v
-T = neighbor_joining(n,d)
-with open(fname+'.out', "w") as f:
-    f.write(tree_tostring(T))
+#fname = fpath + 'dataset_10333_6.txt'
+#with open(fname, "r") as f:
+#    lines = f.read().strip().split('\n')
+#    n = int(lines[0])
+#    d = np.zeros(shape=(n,n),dtype = float)    
+#    for i,l in enumerate(lines[1:]):
+#        l = l.replace('\t',' ')
+#        valstr = l.split(' ')
+#        if valstr[-1]=='':
+#            valstr = valstr[:-1]
+#        for j,v in enumerate(map(int,valstr)):
+#            d[i,j] = v
+#T = neighbor_joining(n,d)
+#with open(fname+'.out', "w") as f:
+#    f.write(tree_tostring(T))
+
+############################################################
+# QUIZZ
+############################################################
+
+D = np.array([[0,13,16,10],[13,0,21,15],[16,21,0,18],[10,15,18,0]])
+print neighbor_joining_matrix(D)
+

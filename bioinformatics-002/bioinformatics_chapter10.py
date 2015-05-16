@@ -261,3 +261,12 @@ fpath = 'C:/Users/Utilisateur/Downloads/'
 #   for u,vw in T.iteritems():
 #       for (v,w) in vw:
 #           f.write(str(u)+'->'+str(v)+':'+str(w)+'\n')
+
+############################################################
+# QUIZZ
+############################################################
+
+
+D = np.array([[0,13,16,10],[13,0,21,15],[16,21,0,18],[10,15,18,0]])
+print 'limb_length',limb_length(4, 2, D)
+

@@ -119,12 +119,12 @@ fpath = 'C:/Users/ngaude/Downloads/'
 #print squared_error_distortion(c,dp)
 
 #fname = fpath + 'Lloyd.txt'
-fname = fpath + 'dataset_10928_3.txt'
-with open(fname, "r") as f:
-    lines = f.read().strip().split('\n')
-    k = int(lines[0].split(' ')[0])
-    dp = map(lambda l:tuple(map(float,l.split(' '))),lines[1:])
-    c = lloyd_kmeans(k,dp)
-with open(fname+'.out', "w") as f:
-    for ci in c:
-        f.write(' '.join(map(str,ci))+'\n')    
+#fname = fpath + 'dataset_10928_3.txt'
+#with open(fname, "r") as f:
+#    lines = f.read().strip().split('\n')
+#    k = int(lines[0].split(' ')[0])
+#    dp = map(lambda l:tuple(map(float,l.split(' '))),lines[1:])
+#    c = lloyd_kmeans(k,dp)
+#with open(fname+'.out', "w") as f:
+#    for ci in c:
+#        f.write(' '.join(map(str,ci))+'\n')    

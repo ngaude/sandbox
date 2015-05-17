@@ -52,6 +52,13 @@ c = soft_kmeans(k,b,dp)
 assert map(lambda t:map(lambda f:round(f,3),t),c) == [[1.662, 2.623], [1.075, 1.148]]
 
 
+def cluster_distance(ca,cb,dm):
+    dab = 0.
+    for i in ca:
+        for j in cb:
+            dab += dm[i-1,j-1]
+    dab = dab / (1.*len(ca)*len(cb))
+    return dab
 
 def hierarchical_clustering(n,dm):
     """
@@ -63,13 +70,6 @@ def hierarchical_clustering(n,dm):
     c = [ [1+i,] for i in range(n)]
     r = []
     odm = dm
-    def cluster_distance(ca,cb,dm):
-        dab = 0.
-        for i in ca:
-            for j in cb:
-                dab += dm[i-1,j-1]
-        dab = dab / (1.*len(ca)*len(cb))
-        return dab
     while len(dm)>2:
         n = len(dm)
         a,b = np.unravel_index(np.argmin(dm + np.eye(n)*dm.max()),(n,n))
@@ -134,3 +134,31 @@ fpath = 'C:/Users/ngaude/Downloads/'
 #with open(fname+'.out', "w") as f:
 #    for ri in r:
 #        f.write(' '.join(map(str,ri))+'\n')
+
+############################################################
+# QUIZZ
+############################################################
+
+# θ = 0.6. Compute Pr(HHTHHH|θ)
+p = math.pow(0.6,5)*math.pow(0.4,1)
+print 'p=',round(p,3)
+
+dp = ((2,8), (2,5), (6,9), (7,5), (5,2))
+c = ((3,5), (5,4))
+b = 1
+hm = hidden_matrix(c,b,dp)
+print 'hm[1,3]=',round(hm[0,4],3)
+
+dp = ((2,6), (4,9), (5,7), (6,5), (8,3))
+w = (0.4, 0.9, 0.2, 0.5, 0.3)
+c = centroid(w,dp)
+print 'c=',' '.join(map(lambda f:str(round(f,3)),c))
+
+#   i  j  k  l
+#i  0 20  9 11
+#j 20  0 17 11
+#k  9 17  0  8
+#l 11 11  8  0 
+dm = ((0, 20, 9, 11),(20, 0, 17, 11),(9, 17,  0,  8),(11, 11,  8,  0)) 
+dm = np.array(dm)
+print 'cluster_distance=',cluster_distance((1,4),(2,3),dm)

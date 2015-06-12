@@ -20,7 +20,11 @@ def centroid(w,dp):
 def hidden_matrix(c,b,dp):
     # given data points dp and centers c
     # returns the hidden matrix of 
-    hm = np.array([[math.exp(-b*distance(xi,ci)) for xi in dp] for ci in c])
+    if (b == None):
+        hm = np.array([[1/math.pow(distance(xi,ci),2) for xi in dp] for ci in c])
+    else:
+        hm = np.array([[math.exp(-b*distance(xi,ci)) for xi in dp] for ci in c])
+        
     return hm/hm.sum(axis=0)
     
 dp = ((0,1),(5,6),(4,5))
@@ -147,10 +151,10 @@ dp = ((2,8), (2,5), (6,9), (7,5), (5,2))
 c = ((3,5), (5,4))
 b = 1
 hm = hidden_matrix(c,b,dp)
-print 'hm[1,3]=',round(hm[0,4],3)
+print 'hm[1,2]=',round(hm[0,1],3)
 
-dp = ((2,6), (4,9), (5,7), (6,5), (8,3))
-w = (0.4, 0.9, 0.2, 0.5, 0.3)
+dp = ((2,8), (2,5), (6,9), (7,5), (5,2))
+w = (0.5, 0.3, 0.8, 0.4, 0.9)
 c = centroid(w,dp)
 print 'c=',' '.join(map(lambda f:str(round(f,3)),c))
 
@@ -161,4 +165,4 @@ print 'c=',' '.join(map(lambda f:str(round(f,3)),c))
 #l 11 11  8  0 
 dm = ((0, 20, 9, 11),(20, 0, 17, 11),(9, 17,  0,  8),(11, 11,  8,  0)) 
 dm = np.array(dm)
-print 'cluster_distance=',cluster_distance((1,4),(2,3),dm)
+print 'cluster_distance=',cluster_distance((1,3),(2,4),dm)

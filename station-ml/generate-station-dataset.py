@@ -114,3 +114,28 @@ vw -d yminitest.dat -t -i y_predictor.vw -p y_minipredictions.txt
 """
 
 
+e = np.zeros(n)
+
+xt = open('xminitest.dat', 'r')
+xp = open('x_minipredictions.txt', 'r')
+yt = open('yminitest.dat', 'r')
+yp = open('y_minipredictions.txt', 'r')
+
+for i in range(n):
+    ax = -float(xt.readline().split(' ')[0])
+    ay = -float(yt.readline().split(' ')[0])
+    bx = float(xp.readline().strip())
+    by = float(yp.readline().strip())
+    e[i] = math.sqrt(math.pow(ax-bx,2)+math.pow(ay-by,2))
+
+xt.close()
+xp.close()
+yt.close()
+yp.close()
+
+plt.hist(e,bins=1000,range=(0,2))
+plt.show()
+
+
+
+

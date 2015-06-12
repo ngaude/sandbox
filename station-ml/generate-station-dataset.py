@@ -51,10 +51,10 @@ head -n 2000000 yhome.dat > y_train.dat
 tail -n 2000000 yhome.dat > y_test.dat
 
 
-vw -d x_train.dat -f x_predictor.vw -c --passes 1000 --loss_function squared --bfgs
+vw -d x_train.dat -f x_predictor.vw -c --passes 100 --loss_function squared --bfgs
 vw -d x_test.dat -t -i x_predictor.vw -p x_predictions.txt
 
-vw -d y_train.dat -f y_predictor.vw -c --passes 1000 --loss_function squared --bfgs
+vw -d y_train.dat -f y_predictor.vw -c --passes 100 --loss_function squared --bfgs
 vw -d y_test.dat -t -i y_predictor.vw -p y_predictions.txt
 
 """
@@ -78,5 +78,39 @@ xp.close()
 yt.close()
 yp.close()
 
-plt.hist(e,bins=1000,range=(0,200))
+plt.hist(e,bins=1000,range=(0,2))
 plt.show()
+
+
+
+#MINI TEST, CAN'T BELIEVE IT !!!!#
+#MINI TEST, CAN'T BELIEVE IT !!!!#
+#MINI TEST, CAN'T BELIEVE IT !!!!#
+#MINI TEST, CAN'T BELIEVE IT !!!!#
+n = 45678
+xf = open('xminitest.dat', 'w')
+yf = open('yminitest.dat', 'w')
+
+for i in range(n):
+    [hx,hy] = np.random.uniform(size=(2))*400
+    e = (round(hx,3),round(hy,3),home_cell(hx,hy))
+    xh = e[0]
+    yh = e[1]
+    w = e[2][0]
+    cell = e[2][1]
+    features = ' |influenceFeatures '
+    features += ' '.join([str(k)+':'+str(1.*v/w) for k,v in cell.iteritems()])
+    xf.write(str(-xh)+features+'\n')
+    yf.write(str(-yh)+features+'\n')
+    if (i%10000==0):
+        print i,'/',n
+
+xf.close()
+yf.close()
+
+"""
+vw -d xminitest.dat -t -i x_predictor.vw -p x_minipredictions.txt
+vw -d yminitest.dat -t -i y_predictor.vw -p y_minipredictions.txt
+"""
+
+

@@ -358,7 +358,7 @@ def hmm_profile_decoding(x,symbols,states,transition,emission):
                (dscore[l,k],dbackt[l,k]) = recurrence_D(l,k)
                (iscore[l,k],ibackt[l,k]) = recurrence_I(l,k)
     
-    np.set_printoptions(precision=2)
+    
   
 #    print '----------'
 #    print 'recurrence from the 2,2 corner...'
@@ -422,18 +422,7 @@ def hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign):
     ret = hmm_profile_decoding(x,a,s,t,e)
     return ret
     
-    
 
-#x = 'AA'
-#theta = 1.0
-#pseudocount = 0.01
-#alphabet = ['A','B']
-#multalign = ['AA','AB']
-#
-#(t,e,a,s) = hmm_profile(theta,alphabet,multalign,pseudocount = pseudocount)
-#print print_hmm_profile(t,e,a,s)
-#print '////////////////////'
-#print hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign)
 
 x = 'AEFDFDC'
 theta = 0.4 
@@ -455,6 +444,59 @@ multalign = ['EEBBA--C-DBAA-AECD--BDB---CC-DDCBBCEDE-EBB-DAEE-C','EEEEABBCEABBCD
 sol = 'M1 M2 M3 M4 M5 M6 M7 M8 M9 D10 M11 M12 I12 I12 M13 M14 M15 M16 M17 M18 D19 M20 M21 M22 M23 I23 M24 M25 M26 I26 I26 M27 D28 M29 M30 M31 I31 I31 D32 M33 M34 I34 M35 M36 M37 M38 I38 M39 M40 M41 M42 M43 M44'
 ret = hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign)
 assert sol == ret
+
+def hmm_parameter_estimation(x,alphabet,path,states):
+    """
+    CODE CHALLENGE: Solve the HMM Parameter Estimation Problem.
+    Input: A string x of symbols emitted from an HMM, followed by the HMM's alphabet Σ,
+    followed by a path π, followed by the collection of states of the HMM.
+    Output: A transition matrix Transition followed by an emission matrix Emission that maximize
+    Pr(x, π) over all possible transition and emission matrices.
+    """
+    assert len(x)==len(path)
+    m = len(alphabet)
+    n = len(states)
+    p = len(path)
+    transition = np.zeros((n,n))
+    emission = np.zeros((n,m))
+    rsymbols = {k: i for (i,k) in enumerate(alphabet)}
+    rstates = {k: i for (i,k) in enumerate(states)}
+        
+    for i in range(p):
+        sy_id = rsymbols[x[i]]
+        st_id = rstates[path[i]]
+        emission[st_id,sy_id] += 1.
+    
+    for i in range(1,p):
+        curr_st_id = rstates[path[i]]
+        prev_st_id = rstates[path[i-1]]
+        transition[prev_st_id,curr_st_id] += 1
+
+    def matrix_norm(mtx):
+        a,b = mtx.shape
+        for i in range(a):
+            csum = mtx[i,:].sum()
+            if csum == 0:
+                mtx[i,:] = 1./b
+            else:
+                mtx[i,:] /=  1.*csum
+        return
+
+    matrix_norm(transition)
+    matrix_norm(emission)
+
+    return transition,emission
+
+    
+np.set_printoptions(precision=10)
+x = 'yzzzyxzxxx'
+alphabet = ['x','y','z']
+path = 'BBABABABAB'
+states = ['A','B','C']
+(t,e) = hmm_parameter_estimation(x,alphabet,path,states)
+t = np.round(t,3)
+e = np.round(e,3)
+ret = print_hmm_profile(t,e,alphabet,states)
 
 ############################################################
 fpath = 'C:/Users/ngaude/Downloads/'
@@ -528,3 +570,16 @@ fpath = 'C:/Users/ngaude/Downloads/'
 #multalign = ['-B-BEBDABE-CEABBCCA-D-ABA--BB-CCECBCCC-DDBEEACAED','-B--DB--ADD-DBB--CAEDE-BAA-EEB-CDDBCC--D-AEE-CAED','BDD-E-DAB-AE--BACCAA-E-DA-EBCA-CD-BCCEDD-AEEDCAED','-BB-EDDAB-CBDADACDBE--AAAAE-D-CCECBCECBDECEBABAED','BB-B-BDABECEDABD-CA-DE-DEA-BDCCCCCBCC-DAD-EEA-BED']
 #ret = hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign)
 
+#fname = fpath + 'HMMParameterEstimation.txt'
+fname = fpath + 'dataset_11632_8.txt'
+with open(fname, "r") as f:
+    text = f.read()
+    lines = text.split('\n')
+    x = lines[0]
+    alphabet = lines[2].split(' ')
+    path = lines[4]
+    states = lines[6].split(' ')
+(t,e) = hmm_parameter_estimation(x,alphabet,path,states)
+ret = print_hmm_profile(t,e,alphabet,states)
+with open(fname+'.out', "w") as f:
+    text = f.write(ret)

@@ -140,8 +140,8 @@ def hmm_profile_decoding(x,symbols,states,transition,emission):
     """
     assert transition.shape == (len(states),len(states))
     assert emission.shape == (len(states),len(symbols))
-    rsymbols = {k: i for (i,k) in enumerate(a)}
-    rstates = {k: i for (i,k) in enumerate(s)}
+    rsymbols = {k: i for (i,k) in enumerate(symbols)}
+    rstates = {k: i for (i,k) in enumerate(states)}
         
     n = len(x)+1
     m = len(states)/3
@@ -170,84 +170,6 @@ def hmm_profile_decoding(x,symbols,states,transition,emission):
     mscore[0,:] = 777
     iscore[1:,0] = 777
 
-    print '----------'
-    print 'initialize non-reachable values with 777'
-    print 'mscore='
-    print mscore
-    print
-    print 'dscore='
-    print dscore
-    print
-    print 'iscore='
-    print iscore
-    print '----------'
-    
-    
-    # initialize viterbi graph top row I0
-    iscore[0,0] = 0
-    ibackt[0,0] = None
-    for k in range(1,n):
-        i0_id = rstates['I0']
-        k_id = rsymbols[x[k-1]]
-        iscore[0,k] = iscore[0,k-1] + np.log(emission[i0_id,k_id]*transition[i0_id,i0_id])
-        ibackt[0,k] = (ibackt,0,k-1)
-    
-    print '----------'
-    print 'initialize viterbi graph top row I0'
-    print 'iscore='
-    print iscore
-    print '----------'
-
-    # initialize viterbi graph top row M1
-    for k in range(1,n):
-        m1_id = rstates['M1']
-        i0_id = rstates['I0']
-        k_id = rsymbols[x[k-1]]
-        print m1_id,i0_id,k_id
-        mscore[1,k] = iscore[0,k-1] + np.log(emission[m1_id,k_id]*transition[i0_id,m1_id])
-        mbackt[1,k] = (ibackt,0,k-1)
-
-    print '----------'
-    print 'initialize viterbi graph top row M1'
-    print 'mscore='
-    print mscore
-    print '----------'
-        
-    # initialize viterbi graph top row D1
-    dscore[1,0] = 0
-    dbackt[1,0] = None
-    for k in range(1,n):
-        i0_id = rstates['I0']
-        d1_id = rstates['D1']
-        dscore[1,k] = iscore[1,k] + np.log(1*transition[i0_id,d1_id])
-        dbackt[1,k] = (ibackt,1,k)
-
-
-    # initialize viterbi graph first left row D0,D1,....
-    dscore[1,0] = 0
-    dbackt[1,0] = None
-    for l in range(2,m):
-        d_prev_id = rstates['D'+str(l-1)]
-        d_curr_id = rstates['D'+str(l)]
-        dscore[l,0] = dscore[l-1,0] + np.log(1*transition[d_prev_id,d_curr_id])
-        dbackt[l,0] = (dbackt,l-1,0)
-        
-    # initialize viterbi graph second left row I1,I2,....
-    for l in range(1,m):
-        d_curr_id = rstates['D'+str(l)]
-        i_curr_id = rstates['I'+str(l)]
-        k_id = rsymbols[x[0]]
-        iscore[l,1] = dscore[l,0] + np.log(emission[i_curr_id,k_id]*transition[d_curr_id,i_curr_id])
-        ibackt[l,1] = (dbackt,l,0)
-    
-    # initialize viterbi graph second left row M3,M2,....
-    for l in range(2,m):
-        d_prev_id = rstates['D'+str(l-1)]
-        m_curr_id = rstates['M'+str(l)]
-        k_id = rsymbols[x[0]]
-        mscore[l,1] = dscore[l-1,0] + np.log(emission[m_curr_id,k_id]*transition[d_prev_id,m_curr_id])
-        mbackt[l,1] = (dbackt,l-1,0)
-
     def recurrence_M(l,k):
         assert l>1 and k>1
         d_prev_id = rstates['D'+str(l-1)]
@@ -260,14 +182,13 @@ def hmm_profile_decoding(x,symbols,states,transition,emission):
         score_I = iscore[l-1,k-1] + np.log(emission[m_curr_id,k_id]*transition[i_prev_id,m_curr_id])
         score_max = max(score_M,score_D,score_I)
         if score_M == score_max:
-            return (score_M,(mbackt,l-1,k-1))
+            return (score_M,('M',l-1,k-1))
         if score_D == score_max:
-            return (score_D,(dbackt,l-1,k-1))
+            return (score_D,('D',l-1,k-1))
         if score_I == score_max:
-            return (score_I,(ibackt,l-1,k-1))
+            return (score_I,('I',l-1,k-1))
 
     def recurrence_D(l,k):
-        assert l>1 and k>1
         d_prev_id = rstates['D'+str(l-1)]
         m_prev_id = rstates['M'+str(l-1)]
         i_prev_id = rstates['I'+str(l-1)]
@@ -277,14 +198,13 @@ def hmm_profile_decoding(x,symbols,states,transition,emission):
         score_I = iscore[l-1,k] + np.log(1*transition[i_prev_id,d_curr_id])
         score_max = max(score_M,score_D,score_I)
         if score_M == score_max:
-            return (score_M,(mbackt,l-1,k))
+            return (score_M,('M',l-1,k))
         if score_D == score_max:
-            return (score_D,(dbackt,l-1,k))
+            return (score_D,('D',l-1,k))
         if score_I == score_max:
-            return (score_I,(ibackt,l-1,k))
+            return (score_I,('I',l-1,k))
 
     def recurrence_I(l,k):
-        assert l>1 and k>1
         d_curr_id = rstates['D'+str(l)]
         m_curr_id = rstates['M'+str(l)]
         i_curr_id = rstates['I'+str(l)]
@@ -294,48 +214,201 @@ def hmm_profile_decoding(x,symbols,states,transition,emission):
         score_I = iscore[l,k-1] + np.log(emission[i_curr_id,k_id]*transition[i_curr_id,i_curr_id])
         score_max = max(score_M,score_D,score_I)
         if score_M == score_max:
-            return (score_M,(mbackt,l,k-1))
+            return (score_M,('M',l,k-1))
         if score_D == score_max:
-            return (score_D,(dbackt,l,k-1))
+            return (score_D,('D',l,k-1))
         if score_I == score_max:
-            return (score_I,(ibackt,l,k-1))    
+            return (score_I,('I',l,k-1))    
 
-    #special reccurence for I1 column 
+#    print '----------'
+#    print 'initialize non-reachable values with 777'
+#    print 'mscore='
+#    print mscore
+#    print
+#    print 'dscore='
+#    print dscore
+#    print
+#    print 'iscore='
+#    print iscore
+#    print '----------'
+    
+    
+    # initialize viterbi graph top row I0
+    i0_id = rstates['I0']
+    s_id = rstates['S']
+    k_id = rsymbols[x[0]]
+    iscore[0,1] = np.log(emission[i0_id,k_id]*transition[s_id,i0_id])
+    ibackt[0,1] = None
+    for k in range(2,n):
+        i0_id = rstates['I0']
+        k_id = rsymbols[x[k-1]]
+        iscore[0,k] = iscore[0,k-1] + np.log(emission[i0_id,k_id]*transition[i0_id,i0_id])
+        ibackt[0,k] = ('I',0,k-1)
+    
+#    print '----------'
+#    print 'initialize viterbi graph top row I0'
+#    print 'iscore='
+#    print iscore
+#    print '----------'
 
+    # initialize viterbi graph top row M1
+    m1_id = rstates['M1']
+    s_id = rstates['S']
+    k_id = rsymbols[x[0]]
+    mscore[1,1] = np.log(emission[m1_id,k_id]*transition[s_id,m1_id])
+    mbackt[1,1] = None  
+    for k in range(2,n):
+        m1_id = rstates['M1']
+        i0_id = rstates['I0']
+        k_id = rsymbols[x[k-1]]
+        mscore[1,k] = iscore[0,k-1] + np.log(emission[m1_id,k_id]*transition[i0_id,m1_id])
+        mbackt[1,k] = ('I',0,k-1)
+
+#    print '----------'
+#    print 'initialize viterbi graph top row M1'
+#    print 'mscore='
+#    print mscore
+#    print '----------'
+        
+    # initialize viterbi graph top row D1
+    d1_id = rstates['D1']
+    s_id = rstates['S']
+    dscore[1,0] = np.log(1*transition[s_id,d1_id])
+    dbackt[1,0] = None    
+    for k in range(1,n):
+        i0_id = rstates['I0']
+        d1_id = rstates['D1']
+        dscore[1,k] = iscore[0,k] + np.log(1*transition[i0_id,d1_id])
+        dbackt[1,k] = ('I',0,k)
+
+#    print '----------'
+#    print 'initialize viterbi graph top row D1'
+#    print 'dscore='
+#    print dscore
+#    print '----------'
+
+    # initialize viterbi graph first left column D0,D1,....
+    dscore[1,0] = 0
+    dbackt[1,0] = None
+    for l in range(2,m):
+        d_prev_id = rstates['D'+str(l-1)]
+        d_curr_id = rstates['D'+str(l)]
+        dscore[l,0] = dscore[l-1,0] + np.log(1*transition[d_prev_id,d_curr_id])
+        dbackt[l,0] = ('D',l-1,0)
+    
+#    print '----------'
+#    print 'initialize viterbi first left column D0,D1,....'
+#    print 'dscore='
+#    print dscore
+#    print '----------'
+    
+
+    # initialize viterbi graph second left column I1,I2,....
+    for l in range(1,m):
+        d_curr_id = rstates['D'+str(l)]
+        i_curr_id = rstates['I'+str(l)]
+        k_id = rsymbols[x[0]]
+        iscore[l,1] = dscore[l,0] + np.log(emission[i_curr_id,k_id]*transition[d_curr_id,i_curr_id])
+        ibackt[l,1] = ('D',l,0)
+        
+#    print '----------'
+#    print 'initialize viterbi second left column I1,I2,....'
+#    print 'iscore='
+#    print iscore
+#    print '----------'
+    
+    # initialize viterbi graph second left column M2,M3,....
+    for l in range(2,m):
+        d_prev_id = rstates['D'+str(l-1)]
+        m_curr_id = rstates['M'+str(l)]
+        k_id = rsymbols[x[0]]
+        mscore[l,1] = dscore[l-1,0] + np.log(emission[m_curr_id,k_id]*transition[d_prev_id,m_curr_id])
+        mbackt[l,1] = ('D',l-1,0)
+
+#    print '----------'
+#    print 'initialize viterbi second left column M2,M3,....'
+#    print 'mscore='
+#    print mscore
+#    print '----------'
+
+    # recurrence on I1 row
+    for k in range(2,n):
+        (iscore[1,k],ibackt[1,k]) = recurrence_I(1,k)
+
+#    print '----------'
+#    print 'recurrence on I1 row'
+#    print 'iscore='
+#    print iscore
+#    print '----------'
+    
+    #recurrence on second second left column D2,D3,....
+    for l in range(2,m):
+        (dscore[l,1],dbackt[l,1]) = recurrence_D(l,1)
+        
+#    print '----------'
+#    print 'recurrence on I1 row'
+#    print 'iscore='
+#    print iscore
+#    print '----------'
+    
+    # recurrence from the 2,2 corner...
     for l in range(2,m):
             for k in range(2,n):
-               (mscore[k,l],mbackt[k,l]) = recurrence_M(k,l)
-               (dscore[k,l],dbackt[k,l]) = recurrence_D(k,l)
-               (iscore[k,l],ibackt[k,l]) = recurrence_I(k,l)
+               (mscore[l,k],mbackt[l,k]) = recurrence_M(l,k)
+               (dscore[l,k],dbackt[l,k]) = recurrence_D(l,k)
+               (iscore[l,k],ibackt[l,k]) = recurrence_I(l,k)
     
-    np.set_printoptions(precision=1)
-    print 'mscore'
-    print mscore
-    print
-    print 'dscore'
-    print dscore
-    print
-    print 'iscore'
-    print iscore
-    print
-    print '/////////////////'
-    return
-    
+    np.set_printoptions(precision=2)
+  
+#    print '----------'
+#    print 'recurrence from the 2,2 corner...'
+#    print 'mscore='
+#    print mscore
+#    print
+#    print 'dscore='
+#    print dscore
+#    print
+#    print 'iscore='
+#    print iscore
+#    print '----------'  
+
     # backtracking max score from backt pointers
-    print '******'
-    print score
-    print '******'
-    print backt
-    print '******'
+
+    mm_id = rstates['M'+str(m-1)]
+    dm_id = rstates['D'+str(m-1)]
+    im_id = rstates['I'+str(m-1)]
+    e_id = rstates['E']
+    score_M = mscore[m-1,n-1] + np.log(transition[mm_id,e_id])
+    score_D = dscore[m-1,n-1] + np.log(transition[dm_id,e_id])
+    score_I = iscore[m-1,n-1] + np.log(transition[im_id,e_id])
+    score_max = max(score_M,score_D,score_I)
+
+    hidden_path = []
+    if score_M == score_max:
+        hidden_path.append('M'+str(m-1))
+        (state,l,k) = mbackt[m-1,n-1]
+    elif score_D == score_max:
+        hidden_path.append('D'+str(m-1))
+        (state,l,k) = dbackt[m-1,n-1]
+    elif score_I == score_max:
+        hidden_path.append('I'+str(m-1))
+        (state,l,k) = ibackt[m-1,n-1]
     
-    rpath = []
-    state = score.shape[1]
-    print state
-    rpath.append(rstates[state])
-    for i in range(1,len(emission))[::-1]:
-        state  = backt[state,i]
-        rpath.append(rstates[state])       
-    return ''.join(rpath[::-1])
+    while True:
+        if state == 'M':
+            hidden_path.append('M'+str(l))
+            backt = mbackt
+        if state == 'D':
+            hidden_path.append('D'+str(l))
+            backt = dbackt
+        if state == 'I':
+            hidden_path.append('I'+str(l))
+            backt = ibackt
+        if backt[l,k] == None:
+            break
+        (state,l,k) = backt[l,k]
+           
+    return ' '.join(hidden_path[::-1])
 
 def hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign):
     """
@@ -351,24 +424,37 @@ def hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign):
     
     
 
-x = 'AA'
-theta = 1.0
-pseudocount = 0.01
-alphabet = ['A','B']
-multalign = ['AA','AB']
-
-(t,e,a,s) = hmm_profile(theta,alphabet,multalign,pseudocount = pseudocount)
-print print_hmm_profile(t,e,a,s)
-print '////////////////////'
-print hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign)
-
-#x = 'AEFDFDC'
-#theta = 0.4 
+#x = 'AA'
+#theta = 1.0
 #pseudocount = 0.01
-#alphabet = ['A','B','C','D','E','F']
-#multalign = ['ACDEFACADF','AFDA---CCF','A--EFD-FDC','ACAEF--A-C','ADDEFAAADF']
+#alphabet = ['A','B']
+#multalign = ['AA','AB']
+#
+#(t,e,a,s) = hmm_profile(theta,alphabet,multalign,pseudocount = pseudocount)
+#print print_hmm_profile(t,e,a,s)
+#print '////////////////////'
 #print hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign)
-    
+
+x = 'AEFDFDC'
+theta = 0.4 
+pseudocount = 0.01
+alphabet = ['A','B','C','D','E','F']
+multalign = ['ACDEFACADF','AFDA---CCF','A--EFD-FDC','ACAEF--A-C','ADDEFAAADF']
+assert 'M1 D2 D3 M4 M5 I5 M6 M7 M8' == hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign)
+
+x = 'EEBEABDCEEABCCCEEBDEDCADEDACCDCBBEECDBDACABDADCBE'
+
+theta = 0.359
+pseudocount = 0.01
+alphabet = ['A','B','C','D','E']
+multalign = ['EEBBA--C-DBAA-AECD--BDB---CC-DDCBBCEDE-EBB-DAEE-C','EEEEABBCEABBCDEE-DAEBDBAEDC-BDBCB--C-B-BCA-DAEECA','--CEB-ACCDEACEEEEDBEED-ADBCCDAC--BC--BDBCAEDAEECC','A--AABDCE-A-CD-ECD-EBBA-EDC-DACCBBCCD-D-BA-DAAEBC','EECEAB--EDDACCE-CD-E--B-EDCCD-CCBBCCD-DBBA--AE-CA','E-CDA-DCECAAECB-CDCEB-B-BDCCD---B--CD-DBCDBDAEB-C','EBCEAEDC-DABC--A-DCEDDBAED-CD-CCBBCCEBDB--BEA-EEC','AC-E-BDCEDAADDEECDEEB-CAEDC-DD-CBBCCD-DBCABDAEECC','EECBABDCEDEAEC-DCDC-BDBDEDA-D-AD-A-EABEB--BDA-ECC']
+
+#(t,e,a,s) = hmm_profile(theta,alphabet,multalign,pseudocount = pseudocount)
+#print print_hmm_profile(t,e,a,s)
+
+sol = 'M1 M2 M3 M4 M5 M6 M7 M8 M9 D10 M11 M12 I12 I12 M13 M14 M15 M16 M17 M18 D19 M20 M21 M22 M23 I23 M24 M25 M26 I26 I26 M27 D28 M29 M30 M31 I31 I31 D32 M33 M34 I34 M35 M36 M37 M38 I38 M39 M40 M41 M42 M43 M44'
+ret = hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign)
+assert sol == ret
 
 ############################################################
 fpath = 'C:/Users/ngaude/Downloads/'
@@ -434,4 +520,11 @@ fpath = 'C:/Users/ngaude/Downloads/'
 #sol = print_hmm_profile(t,e,a,s)
 #with open(fname+'.out', "w") as f:
 #    text = f.write(sol)
-#
+
+#x = 'BBDDEBDABECADABECECEDEBBAACBDACAECBCCADABECEECCED'
+#theta = 0.231
+#pseudocount = 0.01
+#alphabet = ['A','B','C','D','E']
+#multalign = ['-B-BEBDABE-CEABBCCA-D-ABA--BB-CCECBCCC-DDBEEACAED','-B--DB--ADD-DBB--CAEDE-BAA-EEB-CDDBCC--D-AEE-CAED','BDD-E-DAB-AE--BACCAA-E-DA-EBCA-CD-BCCEDD-AEEDCAED','-BB-EDDAB-CBDADACDBE--AAAAE-D-CCECBCECBDECEBABAED','BB-B-BDABECEDABD-CA-DE-DEA-BDCCCCCBCC-DAD-EEA-BED']
+#ret = hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign)
+

@@ -7,6 +7,12 @@ Created on Sun Jun 14 10:04:39 2015
 
 import numpy as np
 
+############################################################
+fpath = 'C:/Users/ngaude/Downloads/'
+#fpath = '/home/ngaude/Downloads/'
+#fpath = 'C:/Users/Utilisateur/Downloads/'
+############################################################
+
 def hmm_profile(theta,alphabet,multalign,pseudocount = 0):
     """
     CODE CHALLENGE: Solve the Profile HMM Problem.
@@ -498,12 +504,88 @@ t = np.round(t,3)
 e = np.round(e,3)
 ret = print_hmm_profile(t,e,alphabet,states)
 
+
+def hmm_decoding(emission,symbols,states,transition_matrix,emission_matrix):
+    """
+    CODE CHALLENGE: Implement the Viterbi algorithm solving the Decoding Problem.
+    Input: A string x, followed by the alphabet from which x was constructed,
+    followed by the states States, transition matrix Transition, and emission matrix
+    Emission of an HMM (Σ, States, Transition, Emission).
+    Output: A path that maximizes the (unconditional) probability Pr(x, π) over all possible paths π.
+    """
+    assert transition_matrix.shape == (len(states),len(states))
+    assert emission_matrix.shape == (len(states),len(symbols))
+    rstates = {v: k for (k,v) in states.iteritems()}
+    def __log_weight(l,k,i):
+        si = symbols[emission[i]]
+        return np.log(emission_matrix[k,si]*transition_matrix[l,k])
+    score = np.empty(shape = (len(states),len(emission)), dtype = float)
+    backt = np.zeros(shape = (len(states),len(emission)), dtype = int)
+    
+    score[:,0] = np.log(1./len(states)*emission_matrix[:,symbols[emission[0]]])
+    for i in range(1,len(emission)):
+        for k in range(len(states)):
+            pscore = np.array(map(lambda l:score[l,i-1]+__log_weight(l,k,i), range(len(states))))
+            score[k,i] = pscore.max()
+            backt[k,i] = pscore.argmax()
+    # backtracking max score from backt pointers
+    rpath = []
+    state = score[:,len(emission)-1].argmax()
+    rpath.append(rstates[state])
+    for i in range(1,len(emission))[::-1]:
+        state  = backt[state,i]
+        rpath.append(rstates[state])       
+    return ''.join(rpath[::-1])
+
+def parse_emission_symbols_states_transition_matrix_emission_matrix(lines):
+    emission = lines[0]
+    symbols = lines[2].split(' ')
+    states = lines[4].split(' ')
+    transition_matrix = np.zeros((len(states),len(states)), dtype = np.longfloat)
+    for i in range(len(states)):
+        transition_matrix[i,:] = map(np.longfloat,lines[i+7].split('\t')[1:len(states)+1])
+    emission_matrix = np.zeros((len(states),len(symbols)), dtype = np.longfloat)
+    for i in range(len(states)):
+        emission_matrix[i,:] = map(np.longfloat,lines[i+9+len(states)].split('\t')[1:len(symbols)+1])
+    return emission,symbols,states,transition_matrix,emission_matrix
+
+def hmm_viterbi_learning(it,x,symbols,states,transition,emission):
+    """
+    CODE CHALLENGE: Implement Viterbi learning for estimating the parameters of an HMM.
+    Input: A number of iterations j, followed by a string x of symbols emitted by an HMM,
+    followed by the HMM's alphabet Σ, followed by the HMM's states, followed by initial transition
+    and emission matrices for the HMM.
+    Output: Emission and transition matrices resulting from applying Viterbi learning for j iterations.
+    """
+    dsymbols = {s: i for (i,s) in enumerate(symbols)}
+    dstates = {s: i for (i,s) in enumerate(states)}
+    for j in range(it):
+        path = hmm_decoding(x,dsymbols,dstates,transition,emission)
+        (transition,emission) = hmm_parameter_estimation(x,symbols,path,states)
+        print print_hmm_profile(transition,emission,symbols,states)
+        print '**************************************'
+    print 
+    return transition,emission
+
+#fname = fpath + 'ViterbiLearning.txt'
+#with open(fname, "r") as f:
+#    text = f.read()
+#    lines = text.split('\n')
+#    it = int(lines[0])
+#    x,symbols,states,t,e = parse_emission_symbols_states_transition_matrix_emission_matrix(lines[2:])
+#    t,e = hmm_viterbi_learning(it,x,symbols,states,t,e)
+#    ret = print_hmm_profile(t,e,symbols,states)
+#with open(fname+'.out', "w") as f:
+#    text = f.write(ret)    
+
+
 ############################################################
-fpath = 'C:/Users/ngaude/Downloads/'
-#fpath = '/home/ngaude/Downloads/'
-#fpath = 'C:/Users/Utilisateur/Downloads/'
 ############################################################
-#
+############################################################
+############################################################
+
+
+
 #theta = 0.252
 #alphabet = ['A','B','C','D','E']
 #multalign = ['DCDABACED','DCCA--CA-','DCDAB-CA-','BCDA---A-','BC-ABE-AE']
@@ -571,15 +653,26 @@ fpath = 'C:/Users/ngaude/Downloads/'
 #ret = hmm_profile_hidden_path(x,theta,pseudocount,alphabet,multalign)
 
 #fname = fpath + 'HMMParameterEstimation.txt'
-fname = fpath + 'dataset_11632_8.txt'
+#fname = fpath + 'dataset_11632_8.txt'
+#with open(fname, "r") as f:
+#    text = f.read()
+#    lines = text.split('\n')
+#    x = lines[0]
+#    alphabet = lines[2].split(' ')
+#    path = lines[4]
+#    states = lines[6].split(' ')
+#(t,e) = hmm_parameter_estimation(x,alphabet,path,states)
+#ret = print_hmm_profile(t,e,alphabet,states)
+#with open(fname+'.out', "w") as f:
+#    text = f.write(ret)
+
+fname = fpath + 'dataset_11632_10.txt'
 with open(fname, "r") as f:
     text = f.read()
     lines = text.split('\n')
-    x = lines[0]
-    alphabet = lines[2].split(' ')
-    path = lines[4]
-    states = lines[6].split(' ')
-(t,e) = hmm_parameter_estimation(x,alphabet,path,states)
-ret = print_hmm_profile(t,e,alphabet,states)
+    it = int(lines[0])
+    x,symbols,states,t,e = parse_emission_symbols_states_transition_matrix_emission_matrix(lines[2:])
+    t,e = hmm_viterbi_learning(it,x,symbols,states,t,e)
+    ret = print_hmm_profile(t,e,symbols,states)
 with open(fname+'.out', "w") as f:
     text = f.write(ret)

@@ -5,13 +5,15 @@ Created on Thu Jun 18 20:11:54 2015
 @author: ngaude
 """
 
+import numpy as np
+
 amino_acid_mass = {'G' : 57, 'A' : 71, 'S' : 87, 'P' : 97, 'V' : 99, 'T' : 101, 'C' : 103,
     'I' : 113, 'L' : 113, 'N' : 114, 'D' : 115, 'K' : 128, 'Q' : 128, 'E' : 129,'M' : 131,
     'H' : 137, 'F' : 147, 'R' : 156, 'Y' : 163, 'W' : 186}
+    
+toy_mass = {'X':4, 'Z':5}
 
- 
-
-def spectrum_graph(spectrum):
+def spectrum_graph(spectrum, ref_mass = amino_acid_mass):
     """
     CODE CHALLENGE: Construct the graph of a spectrum.
     Given: A space-delimited list of integers Spectrum.
@@ -19,8 +21,8 @@ def spectrum_graph(spectrum):
     """
     spectrum.append(0)
     spectrum.sort()
-    raa = {v:k for k,v in amino_acid_mass.iteritems()}
-    aav = amino_acid_mass.values()
+    raa = {v:k for k,v in ref_mass.iteritems()}
+    aav = ref_mass.values()
     aamax = max(aav)
     adj = []
     for i,si in enumerate(spectrum):
@@ -31,11 +33,11 @@ def spectrum_graph(spectrum):
                 adj.append((si,sj,raa[sj-si]))
     return adj
 
-def ideal_spectrum(peptide):
+def ideal_spectrum(peptide, ref_mass = amino_acid_mass):
     """
     return an ideal spectrum from peptide
     """
-    li = [ amino_acid_mass[aa] for aa in peptide]
+    li = [ ref_mass[aa] for aa in peptide]
     n = len(li)
     spectrum = []
     for i in range(0,n+1):
@@ -44,13 +46,13 @@ def ideal_spectrum(peptide):
     return spectrum
 
 
-def spectrum_decoding(spectrum):
+def spectrum_decoding(spectrum, ref_mass = amino_acid_mass):
     """
     CODE CHALLENGE: Solve the Decoding an Ideal Spectrum Problem.
     Given: A space-delimited list of integers Spectrum.
     Return: An amino acid string that explains Spectrum.
     """
-    adj = spectrum_graph(spectrum)
+    adj = spectrum_graph(spectrum, ref_mass)
     g = {}
     for a,b,c in adj:
         g.setdefault(a,[]).append((b,c))
@@ -68,7 +70,7 @@ def spectrum_decoding(spectrum):
                     if ne[0] == sink:
                         # check if solution found ....
                         peptide = [e[1] for e in np][1:]
-                        ispectrum = ideal_spectrum(peptide)
+                        ispectrum = ideal_spectrum(peptide,ref_mass)
                         ispectrum.sort()
                         if set(ispectrum) == set(spectrum):
                             return peptide
@@ -86,6 +88,42 @@ text = '103 131 259 287 387 390 489 490 577 636 690 693 761 840 892 941 1020 107
 spectrum = map(int,text.split(' '))
 peptide = spectrum_decoding(spectrum)
 assert ''.join(peptide) == 'CRQCSLAMQRASQHYVYVWPQETFGFVCRM'
+
+def peptide_vector(peptide, ref_mass = amino_acid_mass):
+    """
+    CODE CHALLENGE: Solve the Converting a Peptide into a Peptide Vector Problem.
+    Given: An amino acid string P.
+    Return: The peptide vector of P (in the form of space-separated integers).
+    """
+    li = [ ref_mass[aa] for aa in peptide]
+    n = len(li)
+    pm = [sum(li[:i]) for i in range(1,n+1)]
+    P = np.zeros(max(pm),dtype = int)
+    for e in pm:
+        P[e-1]=1
+    return P
+
+   
+peptide = 'XZZXX'
+P = peptide_vector(peptide,toy_mass)
+assert ' '.join(map(str,P)) == '0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 0 1'
+
+def vector_peptide(P, ref_mass = amino_acid_mass):
+    """
+    CODE CHALLENGE: Solve the Converting a Peptide Vector into a Peptide Problem.
+    Given: A space-delimited binary vector P
+    Return: An amino acid string whose binary peptide vector matches P. For masses
+    with more than one amino acid, any choice may be used.
+    """
+    pm = [i+1 for i,v in enumerate(P) if v==1]
+    pm_max = max(pm)
+    sm = [pm_max - e for e in pm[:-1]]
+    peptide = spectrum_decoding(pm+sm,ref_mass)
+    return peptide[::-1]
+    
+text = '0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 0 1'
+P = map(int,text.split(' '))
+assert ''.join(vector_peptide(P,toy_mass)) == 'XZZXX'
 
 ############################################################
 fpath = 'C:/Users/ngaude/Downloads/'
@@ -105,10 +143,29 @@ fpath = 'C:/Users/ngaude/Downloads/'
 #    for a,b,c in adj:
 #        f.write(str(a)+'->'+str(b)+':'+c+'\n')
 
-fname = fpath + 'dataset_11813_4.txt'
+#fname = fpath + 'dataset_11813_4.txt'
+#with open(fname, 'r') as f:
+#    text = f.read()
+#    lines = text.split('\n')
+#    spectrum = map(int,lines[0].split(' '))
+#    peptide = spectrum_decoding(spectrum)
+#    print ''.join(peptide)
+
+#fname = fpath + 'dataset_11813_6.txt'
+#with open(fname, 'r') as f:
+#    text = f.read()
+#    lines = text.split('\n')
+#    peptide = lines[0]
+#    P = peptide_vector(peptide)
+#with open(fname+'.out','w') as f:
+#    f.write(' '.join(map(str,P)))
+
+
+fname = fpath + 'dataset_11813_8.txt'
+#fname = fpath + 'peptide_vector_to_peptide.txt'
 with open(fname, 'r') as f:
     text = f.read()
     lines = text.split('\n')
-    spectrum = map(int,lines[0].split(' '))
-    peptide = spectrum_decoding(spectrum)
+    P = map(int,lines[0].split(' '))
+    peptide = vector_peptide(P)
     print ''.join(peptide)
